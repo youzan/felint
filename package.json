@@ -1,0 +1,22 @@
+{
+  "name": "felint",
+  "version": "0.0.1",
+  "description": "eslint and scsslint",
+  "keywords": [
+    "eslint",
+    "scss lint",
+    "felint"
+  ],
+  "author": "zhangmin <zhangmin@youzan.com>",
+  "license": "MIT",
+  "repository": {
+  },
+  "main": "index",
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "commander": "~2.9.0",
+    "colors": "~1.1.2"
+  }
+}
