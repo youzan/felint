@@ -1,9 +1,11 @@
+#!/usr/bin/env node
+
 var program = require('commander');
 var colors = require('colors');
 var childProcess = require('child_process');
 
 program
-  .version('0.0.1')
+  .version('0.0.2')
   .command('init')
   .action(function() {
     console.log('init git hooks:\n'.green);
