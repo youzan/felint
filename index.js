@@ -5,7 +5,7 @@ var colors = require('colors');
 var childProcess = require('child_process');
 
 program
-  .version('0.0.2')
+  .version('0.1.0')
   .command('init')
   .action(function() {
     console.log('init git hooks:\n'.green);
