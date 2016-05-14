@@ -7,6 +7,7 @@ var process = require('process');
 var fs = require('fs');
 
 program
+  .version('0.1.2')
   .command('init')
   .description('init git hook, you can configure you git hook url by .felintrc file')
   .action(function() {

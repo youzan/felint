@@ -18,3 +18,13 @@ felint init
 ```c
 felint update
 ```
+
+## 手动配置git钩子仓库
+
+在项目根目录添加`.felintrc`文件，其内容为：
+
+```js
+{
+	"gitHookUrl": "your url"
+}
+```
