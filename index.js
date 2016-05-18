@@ -7,7 +7,7 @@ var process = require('process');
 var fs = require('fs');
 
 program
-    .version('0.1.4')
+    .version('0.1.5')
     .command('init')
     .description('by default, felint will copy the eslint config file, css lint config and git hooks \
       from https://github.com/youzan/felint-config. \
