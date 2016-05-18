@@ -1,3 +1,7 @@
 .DS_Store
 node_modules
 npm-debug.log
+.git_hooks
+.eslintrc
+.eslintignore
+.scss-lint.yml
