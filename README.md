@@ -7,6 +7,9 @@ Felint = Eslint + Git Hook + Statistics
 安装前请确保你的电脑已经安装好了 npm 和 gem 
 
 ```c
+npm install -g eslint && npm install -g eslint-plugin-react
+gem install scss_lint
+
 npm install -g felint
 ```
 
@@ -39,8 +42,8 @@ felint update
 
 ### html-css-js prettify
 
-`Sublime`插件：`html-css-js prettify`，按`shift+command+h`能自动规范大部分代码。
+推荐安装代码自动格式化插件：`html-css-js prettify`，按`shift+command+h`能自动规范大部分代码。
 
 ### SublimeLinter
 
-`Sublime`插件：`SublimeLinter`、`SublimeLinter-contrib-eslint`和`SublimeLinter-contrib-scss-lint`插件，在文件保存时就可以验证是否符合规范，红的提示为error必须修改为规范的代码，黄的为warning可以忽略，减少commit代码时不符合规范又要重新改的时间。
+推荐安装 `eslint` 相关的3个插件：`SublimeLinter`、`SublimeLinter-contrib-eslint`和`SublimeLinter-contrib-scss-lint`插件，在编码的时候就可以验证是否符合规范，红的提示为error必须修改为规范的代码，黄的为warning可以忽略，减少commit代码时不符合规范又要重新改的时间。
