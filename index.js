@@ -5,6 +5,7 @@ var colors = require('colors');
 var childProcess = require('child_process');
 var process = require('process');
 var fs = require('fs');
+var path = require('path');
 
 // update config files
 function updateConfig() {
@@ -23,6 +24,23 @@ function updateConfig() {
         );
     });
     return processPromise;
+}
+
+// 递归寻找目录
+function hasGitHooks(prePath, pathStr, targetFold) {
+    if (prePath !== pathStr && pathStr && targetFold) {
+        var gitHookPath = pathStr + '/' + targetFold;
+        try {
+            var directoryStat = fs.statSync(gitHookPath);
+        } catch(e) {
+            return hasGitHooks(pathStr, path.dirname(pathStr), targetFold);
+        }
+        if(directoryStat && directoryStat.isDirectory()){
+            return gitHookPath;
+        }
+    } else {
+        return false;
+    }
 }
 
 // init config files
@@ -109,7 +127,6 @@ program
       You can use your own by forking our felint-config and specifying the git url in .felintrc file. \
       More detail please read: https://github.com/youzan/felint/blob/master/README.md')
     .action(function() {
-
         initConfig().then(function(res) {
             runSh();
         }).catch(function() {
@@ -129,6 +146,28 @@ program
         });
 
     });
+
+program
+    .command('use')
+    .description('use different ecamScript version for your project or directory')
+    .action(function() {
+        var hookPath = hasGitHooks('', process.cwd(), '.git_hooks');
+        if(hookPath) {
+            var esV = program.ecamScript6 ? '6' : '5';
+            childProcess.exec(
+                'rm ./.eslintrc && cp ' + hookPath + '/.eslintrc_es' + esV + ' ./.eslintrc',
+                function(err) {
+                    if (err) {
+                        console.log(err, '\n');
+                    } else {
+                        console.log(('already use ecamScript' + esV + ' for current directory').green);
+                    }
+                }
+            );
+        } else {
+            console.log('you should run "felint init" in your project root directory first!'.red);
+        }
+    })
 
 program.parse(process.argv);
 
