@@ -35,6 +35,38 @@ felint update
 ```
 然后执行一次 `felint init` 即可
 
+## 对es6和es5的支持
+
+如果你的项目是统一是用es6，那么在使用felint init和felint update的时候请带上-6的option。比如
+
+```c
+felint init -6
+felint update -6
+```
+
+如果你的项目是es5的，那么可以不带option直接使用或者带-5。比如
+
+```c
+felint init -5
+felint init
+felint update -5
+felint update
+```
+
+如果的你项目是本身是es5的，但是某个目录下的js是es6的，那么你可以在该目录下面运行felint use -6
+
+```c
+felint use -6
+```
+
+将在该目录下使用支持es6的eslintrc文件
+
+## check该目录及父目录下有多少eslintrc文件会对eslint产生影响
+
+```c
+felint checkrc
+```
+
 ## 可以配合使用的 Sublime 插件
 
 ### html-css-js prettify

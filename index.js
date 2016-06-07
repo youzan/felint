@@ -7,37 +7,62 @@ var process = require('process');
 var fs = require('fs');
 var path = require('path');
 
+var HOME = process.env.HOME;
+
 // update config files
 function updateConfig() {
     console.log('update git hooks:\n'.green)
+    var s = has( HOME + '/.git_hooks');
+    var resolveFn, rejectFn;
     var processPromise = new Promise(function(resolve, reject) {
+        resolveFn = resolve;
+        rejectFn = reject;
+    });
+    if(!s || !s.isDirectory()) {
+        console.log('You should run "felint init" first'.red);
+        rejectFn();
+    } else {
         childProcess.exec(
-            'cd ./.git_hooks && git pull origin dev',
+            'cd ~/.git_hooks && git pull origin dev',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
-                    reject();
+                    rejectFn();
                 } else {
-                    resolve();
+                    resolveFn();
                 }
             }
         );
-    });
+    }
     return processPromise;
 }
 
 // 递归寻找目录
-function hasGitHooks(prePath, pathStr, targetFold) {
+function treeHas(prePath, pathStr, targetFold) {
     if (prePath !== pathStr && pathStr && targetFold) {
-        var gitHookPath = pathStr + '/' + targetFold;
+        var fp = pathStr;
+        var s = has(fp + '/' + targetFold);
+        if(!s) {
+            return treeHas(pathStr, path.dirname(pathStr), targetFold);
+        } else {
+            return {
+                'stat': s,
+                'path': fp
+            }
+        }
+    } else {
+        return false;
+    }
+}
+
+function has(pathStr) {
+    if (pathStr) {
         try {
-            var directoryStat = fs.statSync(gitHookPath);
+            var s = fs.statSync(pathStr);
         } catch(e) {
-            return hasGitHooks(pathStr, path.dirname(pathStr), targetFold);
+            return false;
         }
-        if(directoryStat && directoryStat.isDirectory()){
-            return gitHookPath;
-        }
+        return s;
     } else {
         return false;
     }
@@ -78,7 +103,7 @@ function initConfig() {
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
         childProcess.exec(
-            'rm -rf ./.git_hooks && git clone -b dev ' + gitHookUrl + ' .git_hooks',
+            'cd ~ && rm -rf ./.git_hooks && git clone -b dev ' + gitHookUrl + ' .git_hooks',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
@@ -93,11 +118,10 @@ function initConfig() {
 
 
 // run logic shell
-function runSh() {
-    var esV = program.ecamScript6 ? '6' : '5';
+function runSh(esV) {
     console.log('start run logic shell...\n'.green)
     var child = childProcess.exec(
-        'sh ./.git_hooks/update_git_hooks.sh ' + esV,
+        'sh ~/.git_hooks/update_git_hooks.sh ' + esV,
         function(err) {
             if (err) {
                 console.log(err);
@@ -116,19 +140,18 @@ function runSh() {
 }
 
 program
-    .option('-5, --ecamScript5', 'default ecamScript5 for your project')
-    .option('-6, --ecamScript6', 'default ecamScript6 for your project');
-
-program
     .version('0.1.6')
     .command('init')
     .description('by default, felint will copy the eslint config file, css lint config and git hooks \
       from https://github.com/youzan/felint-config. \
       You can use your own by forking our felint-config and specifying the git url in .felintrc file. \
       More detail please read: https://github.com/youzan/felint/blob/master/README.md')
-    .action(function() {
+    .option('-5, --ecamScript5', 'default ecamScript5 for your project')
+    .option('-6, --ecamScript6', 'default ecamScript6 for your project')
+    .action(function(options) {
+        var esV = options.ecamScript6 ? '6' : '5';
         initConfig().then(function(res) {
-            runSh();
+            runSh(esV);
         }).catch(function() {
             console.log(colors.red('Error: please try again'));
         });
@@ -137,35 +160,63 @@ program
 
 program
     .command('update')
-    .description('update git hooks')
-    .action(function() {
-        updateConfig().then(function() {
-            runSh();
-        }).catch(function() {
-            console.log(colors.red('Error: please try again'));
-        });
-
+    .description('update felint config files')
+    .option('-c, --config', 'only update felint config itself')
+    .option('-5, --ecamScript5', 'update felint config files & use ecamScript5 for your project')
+    .option('-6, --ecamScript6', 'update felint config files & use ecamScript6 for your project')
+    .action(function(options) {
+        var isConfig = options.config;
+        var esV = options.ecamScript6 ? '6' : (options.ecamScript5 || !isConfig) ? '5' : '';
+        var p = updateConfig();
+        if(isConfig) {
+            p.then(function() {
+                console.log('update config success'.green);
+            }).catch(function(e) {
+                console.log(e, '\n');
+                console.log(colors.red('Error: please try again'));
+            });
+        } else {
+            p.then(function() {
+                runSh(esV);
+            }).catch(function(e) {
+                console.log(e, '\n');
+                console.log(colors.red('Error: please try again'));
+            });
+        }
     });
 
 program
     .command('use')
     .description('use different ecamScript version for your project or directory')
-    .action(function() {
-        var hookPath = hasGitHooks('', process.cwd(), '.git_hooks');
-        if(hookPath) {
-            var esV = program.ecamScript6 ? '6' : '5';
-            childProcess.exec(
-                'rm ./.eslintrc && cp ' + hookPath + '/.eslintrc_es' + esV + ' ./.eslintrc',
-                function(err) {
-                    if (err) {
-                        console.log(err, '\n');
-                    } else {
-                        console.log(('already use ecamScript' + esV + ' for current directory').green);
-                    }
+    .option('-5, --ecamScript5', 'use ecamScript5 for your project')
+    .option('-6, --ecamScript6', 'use ecamScript6 for your project')
+    .action(function(options) {
+        var esV = options.ecamScript6 ? '6' : '5';
+        childProcess.exec(
+            'cp ~/.git_hooks/.eslintrc_es' + esV + ' ./.eslintrc',
+            function(err) {
+                if (err) {
+                    console.log(err, '\n');
+                    console.log('maybe you should run "felint init" first'.red);
+                } else {
+                    console.log(('already use ecamScript' + esV + ' for current directory').green);
                 }
-            );
-        } else {
-            console.log('you should run "felint init" in your project root directory first!'.red);
+            }
+        );
+    })
+
+program
+    .command('checkrc')
+    .description('check there are how many .eslintrc files in your path')
+    .action(function() {
+        var info = treeHas('', process.cwd(), '.eslintrc');
+        var pathStr;
+        while(info) {
+            pathStr = info.path;
+            if(info.stat.isFile()) {
+                console.log((pathStr + '/.eslintrc').green);
+            }
+            info = treeHas(pathStr, path.dirname(pathStr), '.eslintrc');
         }
     })
 
