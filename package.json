@@ -1,6 +1,6 @@
 {
-  "name": "felint",
-  "version": "0.1.5",
+  "name": "@youzan/felint",
+  "version": "0.1.6",
   "description": "eslint and scsslint",
   "keywords": [
     "eslint",
