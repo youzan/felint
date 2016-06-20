@@ -23,7 +23,7 @@ function updateConfig() {
         rejectFn();
     } else {
         childProcess.exec(
-            'cd ~/.git_hooks && git pull origin dev',
+            'cd ~/.git_hooks && git pull origin master',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
@@ -103,7 +103,7 @@ function initConfig() {
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
         childProcess.exec(
-            'cd ~ && rm -rf ./.git_hooks && git clone -b dev ' + gitHookUrl + ' .git_hooks',
+            'cd ~ && rm -rf ./.git_hooks && git clone -b master ' + gitHookUrl + ' .git_hooks',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
