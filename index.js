@@ -7,36 +7,6 @@ var process = require('process');
 var fs = require('fs');
 var path = require('path');
 
-var HOME = process.env.HOME;
-
-// update config files
-function updateConfig() {
-    console.log('update git hooks:\n'.green)
-    var s = has( HOME + '/.git_hooks');
-    var resolveFn, rejectFn;
-    var processPromise = new Promise(function(resolve, reject) {
-        resolveFn = resolve;
-        rejectFn = reject;
-    });
-    if(!s || !s.isDirectory()) {
-        console.log('You should run "felint init" first'.red);
-        rejectFn();
-    } else {
-        childProcess.exec(
-            'cd ~/.git_hooks && git pull origin master',
-            function(err) {
-                if (err) {
-                    console.log(err, '\n');
-                    rejectFn();
-                } else {
-                    resolveFn();
-                }
-            }
-        );
-    }
-    return processPromise;
-}
-
 // 递归寻找目录
 function treeHas(prePath, pathStr, targetFold) {
     if (prePath !== pathStr && pathStr && targetFold) {
@@ -65,6 +35,25 @@ function has(pathStr) {
         return s;
     } else {
         return false;
+    }
+}
+
+// 删除felint 0.1.6导致的家目录下的.git_hooks文件
+function clear() {
+    var HOME = process.env.HOME;
+    var s = has(HOME + '/.git_hooks');
+    if (s && s.isDirectory()) {
+        childProcess.exec(
+            'rm -rf ~/.git_hooks',
+            function(err) {
+                if (err) {
+                    console.log(err, '\n');
+                    console.log('clear fail!'.red);
+                } else {
+                    console.log('clear success!'.green);
+                }
+            }
+        );
     }
 }
 
@@ -103,7 +92,7 @@ function initConfig() {
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
         childProcess.exec(
-            'cd ~ && rm -rf ./.git_hooks && git clone -b master ' + gitHookUrl + ' .git_hooks',
+            'rm -rf ./.git_hooks && git clone -b master ' + gitHookUrl + ' .git_hooks && cd .git_hooks && rm -rf ./.git',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
@@ -119,9 +108,10 @@ function initConfig() {
 
 // run logic shell
 function runSh(esV) {
+    esV = esV || '5';
     console.log('start run logic shell...\n'.green)
     var child = childProcess.exec(
-        'sh ~/.git_hooks/update_git_hooks.sh ' + esV,
+        'sh ./.git_hooks/update_git_hooks.sh ' + esV,
         function(err) {
             if (err) {
                 console.log(err);
@@ -149,6 +139,7 @@ program
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
     .action(function(options) {
+        clear();
         var esV = options.ecamScript6 ? '6' : '5';
         initConfig().then(function(res) {
             runSh(esV);
@@ -167,7 +158,7 @@ program
     .action(function(options) {
         var isConfig = options.config;
         var esV = options.ecamScript6 ? '6' : (options.ecamScript5 || !isConfig) ? '5' : '';
-        var p = updateConfig();
+        var p = initConfig();
         if(isConfig) {
             p.then(function() {
                 console.log('update config success'.green);
@@ -193,7 +184,7 @@ program
     .action(function(options) {
         var esV = options.ecamScript6 ? '6' : '5';
         childProcess.exec(
-            'cp ~/.git_hooks/.eslintrc_es' + esV + ' ./.eslintrc',
+            'cp ./.git_hooks/.eslintrc_es' + esV + ' ./.eslintrc',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
