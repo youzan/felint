@@ -6,42 +6,22 @@ var childProcess = require('child_process');
 var process = require('process');
 var fs = require('fs');
 var path = require('path');
+var fileUtil = require('./fileUtil.js');
+var checkUpdate = require('./checkUpdate.js');
 
-// 递归寻找目录
-function treeHas(prePath, pathStr, targetFold) {
-    if (prePath !== pathStr && pathStr && targetFold) {
-        var fp = pathStr;
-        var s = has(fp + '/' + targetFold);
-        if(!s) {
-            return treeHas(pathStr, path.dirname(pathStr), targetFold);
-        } else {
-            return {
-                'stat': s,
-                'path': fp
-            }
-        }
-    } else {
-        return false;
-    }
-}
+var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
+var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-function has(pathStr) {
-    if (pathStr) {
-        try {
-            var s = fs.statSync(pathStr);
-        } catch(e) {
-            return false;
-        }
-        return s;
-    } else {
-        return false;
-    }
-}
+var VERSION = '0.2.2';
 
-// 删除felint 0.1.6导致的家目录下的.git_hooks文件
+// 删除felint 0.1.5(6)导致的家目录下的.git_hooks文件
 function clear() {
     var HOME = process.env.HOME;
-    var s = has(HOME + '/.git_hooks');
+    try {
+        var s = fs.statSync(HOME + '/.git_hooks');
+    } catch (e) {
+        return;
+    }
     if (s && s.isDirectory()) {
         childProcess.exec(
             'rm -rf ~/.git_hooks',
@@ -58,11 +38,8 @@ function clear() {
 }
 
 // init config files
-function initConfig() {
+function initConfig(isYouzan) {
     console.log('start init config files...\n'.green);
-    var currWorkDirectory = process.cwd();
-    var felintrcFileObj = {};
-    var felintrcPwd = currWorkDirectory + '/.felintrc';
 
     var resolveFn;
     var rejectFn;
@@ -71,23 +48,21 @@ function initConfig() {
         rejectFn = reject;
     });
 
-    fs.access(felintrcPwd, fs.F_OK | fs.R_OK, function(err) {
-        if (err) {
-            console.log('.felintrc file does not exist or can not be read, please check it\n'.red)
-        } else {
-            try {
-                felintrcFileObj = JSON.parse(fs.readFileSync(felintrcPwd).toString());
-            } catch (e) {
-                console.log('parse .felintrc file error\n');
-            }
+    fileUtil.treeReadFile('.felintrc').then(function(content) {
+        return Promise.resolve(content);
+    }, function() {
+        console.log('.felintrc file does not exist or can not be read as JSON format, please check it\n');
+        return Promise.resolve({});
+    }).then(function(r) {
+        var gitHookUrl = DEFAUTL_GIT_HOOKS;
+        if (isYouzan) {
+            gitHookUrl = YOUZAN_GIT_HOOKS;
         }
-        var gitHookUrl;
-        if (typeof felintrcFileObj === 'object' && felintrcFileObj.gitHookUrl) {
-            gitHookUrl = felintrcFileObj.gitHookUrl;
+        if (r.gitHookUrl) {
             console.log('use .felintrc file\n'.green)
+            gitHookUrl = r.gitHookUrl;
         } else {
-            gitHookUrl = 'https://github.com/youzan/felint-config.git';
-            console.log('use default config...\n'.green)
+            isYouzan ? console.log('use youzan config...\n'.green) : console.log('use default config...\n'.green)
         }
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
@@ -101,36 +76,35 @@ function initConfig() {
                 resolveFn();
             }
         );
-    });
+    })
+
     return processPromise;
 }
 
 
 // run logic shell
-function runSh(esV) {
-    esV = esV || '5';
+function runSh(isYouzan, cb) {
+    isYouzan = isYouzan && 'youzan';
     console.log('start run logic shell...\n'.green)
     var child = childProcess.exec(
-        'sh ./.git_hooks/update_git_hooks.sh ' + esV,
+        'sh ./.git_hooks/update_git_hooks.sh ' + isYouzan,
         function(err) {
             if (err) {
                 console.log(err);
                 console.log('\n');
                 console.log(colors.red('Error: please try again'));
             } else {
-                console.log(colors.green('update git hooks success! ') + '\n( eslint will be run while git commit )\n');
-                console.log(colors.green('update .eslintrc .scss-lint.yml success!\n'));
-                console.log(colors.green('Enjoy!'));
+                cb && cb();
             }
         }
     );
     child.stdout.on('data', function(data) {
         console.log(data);
-    })
+    });
 }
 
 program
-    .version('0.1.6')
+    .version(VERSION)
     .command('init')
     .description('by default, felint will copy the eslint config file, css lint config and git hooks \
       from https://github.com/youzan/felint-config. \
@@ -138,42 +112,59 @@ program
       More detail please read: https://github.com/youzan/felint/blob/master/README.md')
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
+    .option('--youzan', 'for youzan org only')
     .action(function(options) {
-        clear();
-        var esV = options.ecamScript6 ? '6' : '5';
-        initConfig().then(function(res) {
-            runSh(esV);
-        }).catch(function() {
-            console.log(colors.red('Error: please try again'));
+        checkUpdate(VERSION).then(function(isUpdating) {
+            if (isUpdating) {
+                return;
+            }
+            clear();
+            var esV = options.ecamScript6 ? '6' : '5';
+            var youzan = !!options.youzan;
+            initConfig(youzan).then(function(res) {
+                runSh(youzan, function() {
+                    fileUtil.mergeEslintrcFile(esV).then(function(content) {
+                        fileUtil.createJSONFile(process.cwd() + '/.eslintrc', content).then(function() {
+                            console.log('update eslintrc file success'.green);
+                        }).catch(function(r) {
+                            console.log(colors.red(r));
+                        });
+                    }, function(r) {
+                        console.log(colors.red(r));
+                    });
+                    fileUtil.mergeScssLint().then(function(content) {
+                        fileUtil.createYAMLFile(process.cwd() + '/.scss-lint.yml', content).then(function() {
+                            console.log('update scss-lint file success'.green);
+                        }).catch(function(r) {
+                            console.log(colors.red(r));
+                        });
+                    }, function(r) {
+                        console.log(colors.red(r));
+                    });
+                });
+            }).catch(function() {
+                console.log(colors.red('Error: please try again'));
+            });
         });
-
     });
 
+// 更新配置文件和钩子
 program
     .command('update')
-    .description('update felint config files')
-    .option('-c, --config', 'only update felint config itself')
-    .option('-5, --ecamScript5', 'update felint config files & use ecamScript5 for your project')
-    .option('-6, --ecamScript6', 'update felint config files & use ecamScript6 for your project')
+    .description('update felint config files(if you need to use the new eslintrc file or scss-lint file, use "use" command after update)')
     .action(function(options) {
-        var isConfig = options.config;
-        var esV = options.ecamScript6 ? '6' : (options.ecamScript5 || !isConfig) ? '5' : '';
-        var p = initConfig();
-        if(isConfig) {
-            p.then(function() {
-                console.log('update config success'.green);
-            }).catch(function(e) {
-                console.log(e, '\n');
+        checkUpdate(VERSION).then(function(isUpdating) {
+            if (isUpdating) {
+                return;
+            }
+            initConfig().then(function(res) {
+                runSh(false, function() {
+                    console.log('update success!'.green);
+                });
+            }).catch(function() {
                 console.log(colors.red('Error: please try again'));
             });
-        } else {
-            p.then(function() {
-                runSh(esV);
-            }).catch(function(e) {
-                console.log(e, '\n');
-                console.log(colors.red('Error: please try again'));
-            });
-        }
+        })
     });
 
 program
@@ -183,31 +174,36 @@ program
     .option('-6, --ecamScript6', 'use ecamScript6 for your project')
     .action(function(options) {
         var esV = options.ecamScript6 ? '6' : '5';
-        childProcess.exec(
-            'cp ./.git_hooks/.eslintrc_es' + esV + ' ./.eslintrc',
-            function(err) {
-                if (err) {
-                    console.log(err, '\n');
-                    console.log('maybe you should run "felint init" first'.red);
-                } else {
-                    console.log(('already use ecamScript' + esV + ' for current directory').green);
-                }
-            }
-        );
+        fileUtil.mergeEslintrcFile(esV).then(function(content) {
+            fileUtil.createJSONFile(process.cwd() + '/.eslintrc', content).then(function() {
+                console.log(colors.green('already use ecamScript' + esV + ' for your project or directory'));
+            }).catch(function(r) {
+                console.log(colors.red(r));
+            });
+        }, function(r) {
+            console.log(colors.red(r));
+        });
+        fileUtil.mergeScssLint().then(function(content) {
+            fileUtil.createYAMLFile(process.cwd() + '/.scss-lint.yml', content).then(function() {
+                console.log('update scss-lint file success'.green);
+            }).catch(function(r) {
+                console.log(colors.red(r));
+            });
+        }, function(r) {
+            console.log(colors.red(r));
+        });
     })
 
 program
     .command('checkrc')
     .description('check there are how many .eslintrc files in your path')
     .action(function() {
-        var info = treeHas('', process.cwd(), '.eslintrc');
+        var info = fileUtil.findUp( process.cwd(), '.eslintrc', 'isFile');
         var pathStr;
         while(info) {
             pathStr = info.path;
-            if(info.stat.isFile()) {
-                console.log((pathStr + '/.eslintrc').green);
-            }
-            info = treeHas(pathStr, path.dirname(pathStr), '.eslintrc');
+            console.log((pathStr).green);
+            info = fileUtil.findUp( path.dirname(info.dirname), '.eslintrc', 'isFile' );
         }
     })
 

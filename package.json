@@ -1,6 +1,6 @@
 {
   "name": "felint",
-  "version": "0.1.6",
+  "version": "0.2.2",
   "description": "eslint and scsslint",
   "keywords": [
     "eslint",
@@ -15,12 +15,15 @@
   },
   "main": "index.js",
   "files": [
-    "index.js"
+    "index.js",
+    "checkUpdate.js",
+    "fileUtil.js"
   ],
   "bin": "index.js",
   "dependencies": {
+    "colors": "~1.1.2",
     "commander": "~2.9.0",
-    "colors": "~1.1.2"
+    "js-yaml": "^3.6.1"
   },
   "bugs": {
     "url": "https://github.com/youzan/felint/issues"
