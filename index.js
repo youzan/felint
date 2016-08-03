@@ -12,7 +12,7 @@ var checkUpdate = require('./checkUpdate.js');
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-var VERSION = '0.2.2';
+var VERSION = require('./package.json').version;
 
 // 删除felint 0.1.5(6)导致的家目录下的.git_hooks文件
 function clear() {
