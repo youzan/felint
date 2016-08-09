@@ -78,4 +78,22 @@ felint checkrc
 
 ### SublimeLinter
 
-推荐安装 `eslint` 相关的3个插件：`SublimeLinter`、`SublimeLinter-contrib-eslint`和`SublimeLinter-contrib-scss-lint`插件，在编码的时候就可以验证是否符合规范，红的提示为error必须修改为规范的代码，黄的为warning可以忽略，减少commit代码时不符合规范又要重新改的时间。
+`Sublime`插件：`SublimeLinter`、`SublimeLinter-contrib-eslint`和`SublimeLinter-contrib-scss-lint`插件，在文件保存时就可以验证是否符合规范，红的提示为error必须修改为规范的代码，黄的为warning可以忽略，减少commit代码时不符合规范又要重新改的时间。
+
+
+
+## Q&A
+
+由于felint在init的时候只会检查其依赖的plugin是否已全局安装，但不会检测版本匹配，所以如果发现在执行felint init后还是无法正常工作，请检查全局plugin的版本是否匹配。
+
+felint依赖的全局plugin如下：
+
+```
+'eslint' '@2.11.1'
+'scss_lint' '--version=0.48.0'
+'eslint-plugin-react' '@5.1.1'
+'babel-eslint' '@6.0.4'
+'eslint-plugin-import' '@1.8.1'
+'eslint-plugin-jsx-a11y' '@1.2.3'
+'eslint-config-airbnb' '@9.0.1'
+```
