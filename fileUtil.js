@@ -156,8 +156,8 @@ function mergeEslintrcFile(esV) {
         resFn = res;
         rejFn = rej;
     });
-    // 找到.git_hooks目录
-    var gitHookPath = findUp(process.cwd(), '.git_hooks', 'isDirectory');
+    // 找到.felint目录
+    var gitHookPath = findUp(process.cwd(), '.felint', 'isDirectory');
     if (gitHookPath) {
         // 读取对应eslintrc文件
         readJSON(gitHookPath.path + '/.eslintrc_es' + esV).then(function(r) {
@@ -175,7 +175,7 @@ function mergeEslintrcFile(esV) {
             rejFn(r);
         })
     } else {
-        rejFn('can find .git_hooks directory!');
+        rejFn('can find .felint directory!');
     }
     return p;
 }
@@ -186,8 +186,8 @@ function mergeScssLint() {
         resFn = res;
         rejFn = rej;
     });
-    // 找到.git_hooks目录
-    var gitHookPath = findUp(process.cwd(), '.git_hooks', 'isDirectory');
+    // 找到.felint目录
+    var gitHookPath = findUp(process.cwd(), '.felint', 'isDirectory');
     if (gitHookPath) {
         // 读取对应scss-lint文件
         readYaml(gitHookPath.path + '/.scss-lint.yml').then(function(r) {
@@ -205,7 +205,7 @@ function mergeScssLint() {
             rejFn(r);
         })
     } else {
-        rejFn('can find .git_hooks directory!');
+        rejFn('can find .felint directory!');
     }
     return p;
 }

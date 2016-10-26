@@ -12,30 +12,7 @@ var checkUpdate = require('./checkUpdate.js');
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-var VERSION = '0.2.2';
-
-// 删除felint 0.1.5(6)导致的家目录下的.git_hooks文件
-function clear() {
-    var HOME = process.env.HOME;
-    try {
-        var s = fs.statSync(HOME + '/.git_hooks');
-    } catch (e) {
-        return;
-    }
-    if (s && s.isDirectory()) {
-        childProcess.exec(
-            'rm -rf ~/.git_hooks',
-            function(err) {
-                if (err) {
-                    console.log(err, '\n');
-                    console.log('clear fail!'.red);
-                } else {
-                    console.log('clear success!'.green);
-                }
-            }
-        );
-    }
-}
+var VERSION = '0.2.4';
 
 // init config files
 function initConfig(isYouzan) {
@@ -67,7 +44,7 @@ function initConfig(isYouzan) {
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
         childProcess.exec(
-            'rm -rf ./.git_hooks && git clone -b master ' + gitHookUrl + ' .git_hooks && cd .git_hooks && rm -rf ./.git',
+            'rm -rf ./.git_hooks && rm -rf ./.felint && git clone -b master ' + gitHookUrl + ' .felint && cd .felint && rm -rf ./.git',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
@@ -87,7 +64,7 @@ function runSh(isYouzan, cb) {
     isYouzan = isYouzan && 'youzan';
     console.log('start run logic shell...\n'.green)
     var child = childProcess.exec(
-        'sh ./.git_hooks/update_git_hooks.sh ' + isYouzan,
+        'sh ./.felint/update_git_hooks.sh ' + isYouzan,
         function(err) {
             if (err) {
                 console.log(err);
@@ -118,7 +95,6 @@ program
             if (isUpdating) {
                 return;
             }
-            clear();
             var esV = options.ecamScript6 ? '6' : '5';
             var youzan = !!options.youzan;
             initConfig(youzan).then(function(res) {

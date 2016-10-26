@@ -18,6 +18,7 @@ function checkUpdate(version) {
             var isUpdating = false;
             if (err) {
                 console.log('check update fail...');
+                resFn(isUpdating);
             } else {
                 try {
                     eval('var packageInfo = ' + stdout);
