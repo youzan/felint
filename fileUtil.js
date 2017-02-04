@@ -238,5 +238,6 @@ module.exports = {
     createJSONFile: createJSONFile,
     findUp: findUp,
     mergeScssLint: mergeScssLint,
-    createYAMLFile: createYAMLFile
+    createYAMLFile: createYAMLFile,
+    has: has
 }

@@ -8,11 +8,22 @@ var fs = require('fs');
 var path = require('path');
 var fileUtil = require('./fileUtil.js');
 var checkUpdate = require('./checkUpdate.js');
+var checkOverRide = require('./checkOverRide.js');
 
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-var VERSION = '0.2.4';
+var VERSION = '0.2.5';
+
+var DefaultPackageMap = {
+    'eslint-plugin-react': '5.1.1',
+    'babel-eslint': '6.0.4',
+    'eslint-plugin-import': '1.8.1',
+    'eslint-plugin-jsx-a11y': '1.2.3',
+    'eslint-config-airbnb': '9.0.1',
+    'eslint-plugin-lean-imports': '0.3.3',
+    'eslint': '2.11.1'
+}
 
 // init config files
 function initConfig(isYouzan) {
@@ -80,6 +91,103 @@ function runSh(isYouzan, cb) {
     });
 }
 
+function _check(dependencied, i, keys) {
+    var key = keys[i];
+    var version = DefaultPackageMap[key];
+    var reg = new RegExp('\/' + key + '$');
+    var flag = false;
+    var pathStr = '';
+    i++;
+    dependencied.some(function(value) {
+        if (reg.test(value)) {
+            pathStr = value + '/package.json';
+            return flag = true;
+        }
+        return false;
+    });
+    if (flag) {
+        fileUtil.readJSON(pathStr).then(function(fileContent) {
+            if (fileContent.version === version) {
+                console.log(colors.green('你已安装' + key + '@' + version));
+            } else {
+                console.log(colors.red(key + '@' + fileContent.version + '包版本错误，可能会导致felint问题，推荐使用'), colors.green(version + '版本'));
+            }
+            if (i < keys.length) {
+                _check(dependencied, i, keys);
+            }
+        }, function(e) {
+            console.log(colors.red('你尚未安装' + key + '@' + version));
+            if (i < keys.length) {
+                _check(dependencied, i, keys);
+            }
+        });
+    } else {
+        console.log(colors.red('你尚未安装' + key + '@' + version));
+        if (i < keys.length) {
+            _check(dependencied, i, keys);
+        }
+    }
+}
+
+function checkPackageVersion() {
+    childProcess.exec(
+        'npm list -g --depth=0 --silent --parseable=true',
+        function(err, stdout) {
+            var dependencied = (stdout.split('\n')) || [];
+            var keys = Object.keys(DefaultPackageMap);
+            _check(dependencied, 0, keys);
+        }
+    );
+}
+
+function updateEslintrcFile(eslintrcPath, esV) {
+    var resFn;
+    var p = new Promise(function(res) {
+        resFn = res;
+    });
+    checkOverRide(eslintrcPath).then(function() {
+        promiseO = fileUtil.mergeEslintrcFile(esV).then(function(content) {
+            fileUtil.createJSONFile(eslintrcPath, content).then(function() {
+                console.log('update eslintrc file success'.green);
+                resFn();
+            }).catch(function(r) {
+                console.log(colors.red(r));
+                resFn();
+            });
+        }, function(r) {
+            console.log(colors.red(r));
+            resFn();
+        });
+    }, function() {
+        resFn();
+    });
+    return p;
+}
+
+function updateScsslintYmlFile(scsslintYmlPath) {
+    var resFn;
+    var p = new Promise(function(res) {
+        resFn = res;
+    });
+    checkOverRide(scsslintYmlPath).then(function() {
+        fileUtil.mergeScssLint().then(function(content) {
+            fileUtil.createYAMLFile(scsslintYmlPath, content).then(function() {
+                console.log('update scss-lint file success'.green);
+                resFn();
+            }).catch(function(r) {
+                console.log(colors.red(r));
+                resFn();
+            });
+        }, function(r) {
+            console.log(colors.red(r));
+            resFn();
+        });
+    }, function() {
+        resFn();
+    });
+    return p;
+}
+
 program
     .version(VERSION)
     .command('init')
@@ -99,23 +207,12 @@ program
             var youzan = !!options.youzan;
             initConfig(youzan).then(function(res) {
                 runSh(youzan, function() {
-                    fileUtil.mergeEslintrcFile(esV).then(function(content) {
-                        fileUtil.createJSONFile(process.cwd() + '/.eslintrc', content).then(function() {
-                            console.log('update eslintrc file success'.green);
-                        }).catch(function(r) {
-                            console.log(colors.red(r));
-                        });
-                    }, function(r) {
-                        console.log(colors.red(r));
-                    });
-                    fileUtil.mergeScssLint().then(function(content) {
-                        fileUtil.createYAMLFile(process.cwd() + '/.scss-lint.yml', content).then(function() {
-                            console.log('update scss-lint file success'.green);
-                        }).catch(function(r) {
-                            console.log(colors.red(r));
-                        });
-                    }, function(r) {
-                        console.log(colors.red(r));
+                    var eslintrcPath = process.cwd() + '/.eslintrc';
+                    var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
+                    updateEslintrcFile(eslintrcPath, esV).then(function() {
+                        updateScsslintYmlFile(scsslintYmlPath);
+                    }, function() {
+                        updateScsslintYmlFile(scsslintYmlPath);
                     });
                 });
             }).catch(function() {
@@ -150,23 +247,12 @@ program
     .option('-6, --ecamScript6', 'use ecamScript6 for your project')
     .action(function(options) {
         var esV = options.ecamScript6 ? '6' : '5';
-        fileUtil.mergeEslintrcFile(esV).then(function(content) {
-            fileUtil.createJSONFile(process.cwd() + '/.eslintrc', content).then(function() {
-                console.log(colors.green('already use ecamScript' + esV + ' for your project or directory'));
-            }).catch(function(r) {
-                console.log(colors.red(r));
-            });
-        }, function(r) {
-            console.log(colors.red(r));
-        });
-        fileUtil.mergeScssLint().then(function(content) {
-            fileUtil.createYAMLFile(process.cwd() + '/.scss-lint.yml', content).then(function() {
-                console.log('update scss-lint file success'.green);
-            }).catch(function(r) {
-                console.log(colors.red(r));
-            });
-        }, function(r) {
-            console.log(colors.red(r));
+        var eslintrcPath = process.cwd() + '/.eslintrc';
+        var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
+        updateEslintrcFile(eslintrcPath, esV).then(function() {
+            updateScsslintYmlFile(scsslintYmlPath);
+        }, function() {
+            updateScsslintYmlFile(scsslintYmlPath);
         });
     })
 
@@ -182,6 +268,14 @@ program
             info = fileUtil.findUp( path.dirname(info.dirname), '.eslintrc', 'isFile' );
         }
     })
+
+program
+    .command('checkDependence')
+    .description('check felint dependencies')
+    .action(function() {
+        console.log(colors.green('检查中...'));
+        checkPackageVersion();
+    });
 
 program.parse(process.argv);
 

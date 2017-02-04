@@ -1,6 +1,6 @@
 {
   "name": "felint",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "eslint and scsslint",
   "keywords": [
     "eslint",
@@ -17,7 +17,8 @@
   "files": [
     "index.js",
     "checkUpdate.js",
-    "fileUtil.js"
+    "fileUtil.js",
+    "checkOverRide.js"
   ],
   "bin": "index.js",
   "dependencies": {
