@@ -13,7 +13,7 @@ var checkOverRide = require('./checkOverRide.js');
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-var VERSION = '0.2.5';
+var VERSION = '0.3.0';
 
 var DefaultPackageMap = {
     'eslint-plugin-react': '5.1.1',
@@ -26,7 +26,7 @@ var DefaultPackageMap = {
 }
 
 // init config files
-function initConfig(isYouzan) {
+function initConfig() {
     console.log('start init config files...\n'.green);
 
     var resolveFn;
@@ -43,14 +43,9 @@ function initConfig(isYouzan) {
         return Promise.resolve({});
     }).then(function(r) {
         var gitHookUrl = DEFAUTL_GIT_HOOKS;
-        if (isYouzan) {
-            gitHookUrl = YOUZAN_GIT_HOOKS;
-        }
         if (r.gitHookUrl) {
             console.log('use .felintrc file\n'.green)
             gitHookUrl = r.gitHookUrl;
-        } else {
-            isYouzan ? console.log('use youzan config...\n'.green) : console.log('use default config...\n'.green)
         }
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
@@ -71,11 +66,10 @@ function initConfig(isYouzan) {
 
 
 // run logic shell
-function runSh(isYouzan, cb) {
-    isYouzan = isYouzan && 'youzan';
+function runSh(cb) {
     console.log('start run logic shell...\n'.green)
     var child = childProcess.exec(
-        'sh ./.felint/update_git_hooks.sh ' + isYouzan,
+        'sh ./.felint/update_git_hooks.sh',
         function(err) {
             if (err) {
                 console.log(err);
@@ -197,16 +191,14 @@ program
       More detail please read: https://github.com/youzan/felint/blob/master/README.md')
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
-    .option('--youzan', 'for youzan org only')
     .action(function(options) {
         checkUpdate(VERSION).then(function(isUpdating) {
             if (isUpdating) {
                 return;
             }
             var esV = options.ecamScript6 ? '6' : '5';
-            var youzan = !!options.youzan;
-            initConfig(youzan).then(function(res) {
-                runSh(youzan, function() {
+            initConfig().then(function(res) {
+                runSh(function() {
                     var eslintrcPath = process.cwd() + '/.eslintrc';
                     var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
                     updateEslintrcFile(eslintrcPath, esV).then(function() {
@@ -275,6 +267,17 @@ program
     .action(function() {
         console.log(colors.green('检查中...'));
         checkPackageVersion();
+    });
+
+// 改命令用于产生youzan自己的felintrc文件
+program
+    .command('youzan')
+    .description('create Youzan org felintrc file')
+    .action(function() {
+        var felintrcPath = process.cwd() + '/.felintrc';
+        fileUtil.createJSONFileSync(felintrcPath, {
+            "gitHookUrl": YOUZAN_GIT_HOOKS
+        });
     });
 
 program.parse(process.argv);

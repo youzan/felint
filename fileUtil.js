@@ -129,6 +129,15 @@ function createJSONFile(pathStr, content) {
     return p;
 }
 
+function createJSONFileSync(pathStr, content) {
+    if (!pathStr || !content) {
+        console.log('neet pathStr and file content');
+    } else {
+        var contentStr = JSON.stringify(content || {}, null, 4);
+        fs.writeFileSync(pathStr, contentStr);
+    }
+}
+
 function createYAMLFile(pathStr, content) {
     var resFn, rejFn;
     var p = new Promise(function(res, rej) {
@@ -239,5 +248,6 @@ module.exports = {
     findUp: findUp,
     mergeScssLint: mergeScssLint,
     createYAMLFile: createYAMLFile,
-    has: has
+    has: has,
+    createJSONFileSync: createJSONFileSync
 }
