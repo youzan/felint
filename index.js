@@ -167,7 +167,6 @@ function updateScsslintYmlFile(scsslintYmlPath) {
 
     fileUtil.mergeScssLint().then(function(contentStr) {
         checkOverRide(scsslintYmlPath, contentStr).then(function() {
-            console.log(1);
             fileUtil.createYAMLFile(scsslintYmlPath, contentStr).then(function() {
                 console.log('update scss-lint file success'.green);
                 resFn();
@@ -196,10 +195,10 @@ program
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
     .action(function(options) {
-        // checkUpdate(VERSION).then(function(isUpdating) {
-        //     if (isUpdating) {
-        //         return;
-        //     }
+        checkUpdate(VERSION).then(function(isUpdating) {
+            if (isUpdating) {
+                return;
+            }
             var esV = options.ecamScript6 ? '6' : '5';
             initConfig().then(function(res) {
                 runSh(function() {
@@ -214,7 +213,7 @@ program
             }).catch(function() {
                 console.log(colors.red('Error: please try again'));
             });
-        // });
+        });
     });
 
 // 更新配置文件和钩子
