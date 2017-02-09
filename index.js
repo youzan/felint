@@ -139,8 +139,8 @@ function updateEslintrcFile(eslintrcPath, esV) {
     var p = new Promise(function(res) {
         resFn = res;
     });
-    checkOverRide(eslintrcPath).then(function() {
-        promiseO = fileUtil.mergeEslintrcFile(esV).then(function(content) {
+    fileUtil.mergeEslintrcFile(esV).then(function(content) {
+        checkOverRide(eslintrcPath, content).then(function() {
             fileUtil.createJSONFile(eslintrcPath, content).then(function() {
                 console.log('update eslintrc file success'.green);
                 resFn();
@@ -148,11 +148,11 @@ function updateEslintrcFile(eslintrcPath, esV) {
                 console.log(colors.red(r));
                 resFn();
             });
-        }, function(r) {
-            console.log(colors.red(r));
+        }, function() {
             resFn();
         });
-    }, function() {
+    }, function(r) {
+        console.log(colors.red(r));
         resFn();
     });
     return p;
@@ -163,22 +163,25 @@ function updateScsslintYmlFile(scsslintYmlPath) {
     var p = new Promise(function(res) {
         resFn = res;
     });
-    checkOverRide(scsslintYmlPath).then(function() {
-        fileUtil.mergeScssLint().then(function(content) {
-            fileUtil.createYAMLFile(scsslintYmlPath, content).then(function() {
+
+    fileUtil.mergeScssLint().then(function(contentStr) {
+        checkOverRide(scsslintYmlPath, contentStr).then(function() {
+            console.log(1);
+            fileUtil.createYAMLFile(scsslintYmlPath, contentStr).then(function() {
                 console.log('update scss-lint file success'.green);
                 resFn();
             }).catch(function(r) {
                 console.log(colors.red(r));
                 resFn();
             });
-        }, function(r) {
-            console.log(colors.red(r));
+        }, function() {
             resFn();
         });
-    }, function() {
+    }, function(r) {
+        console.log(colors.red(r));
         resFn();
     });
+
     return p;
 }
 
