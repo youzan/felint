@@ -1,22 +1,24 @@
+/* global Promise */
+
 var fs = require('fs');
 var path = require('path');
 var YAML = require('js-yaml');
 
 var DEFAULT_FELINTRC_CONFIG = {
-    "eslintrc_es5": {
+    'eslintrc_es5': {
     },
-    "eslintrc_es6": {
+    'eslintrc_es6': {
     },
-    "scss-lint": {
+    'scss-lint': {
 
     }
-}
+};
 
 function has(pathStr) {
     if (pathStr) {
         try {
             var s = fs.statSync(pathStr);
-        } catch(e) {
+        } catch (e) {
             return false;
         }
         return s;
@@ -29,14 +31,14 @@ function treeHas(prePath, pathStr, targetFold) {
     if (prePath !== pathStr && pathStr && targetFold) {
         var fp = pathStr + '/' + targetFold;
         var s = has(fp);
-        if(!s) {
+        if (!s) {
             return treeHas(pathStr, path.dirname(pathStr), targetFold);
         } else {
             return {
                 'stat': s,
                 'path': fp,
                 'dirname': pathStr
-            }
+            };
         }
     } else {
         return false;
@@ -55,7 +57,8 @@ function findUp(pathStr, target, type) {
 
 
 function readJSON(pathStr) {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -65,9 +68,9 @@ function readJSON(pathStr) {
     }
     var pathInfo = path.parse(pathStr);
     var fileContent;
-    fs.access(pathStr, fs.F_OK | fs.R_OK, function (err) {
+    fs.access(pathStr, fs.F_OK | fs.R_OK, function(err) {
         if (err) {
-            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it')
+            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it');
         } else {
             try {
                 fileContent = JSON.parse(fs.readFileSync(pathStr).toString());
@@ -82,7 +85,8 @@ function readJSON(pathStr) {
 }
 
 function readYaml(pathStr) {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -92,9 +96,9 @@ function readYaml(pathStr) {
     }
     var pathInfo = path.parse(pathStr);
     var fileContent;
-    fs.access(pathStr, fs.F_OK | fs.R_OK, function (err) {
+    fs.access(pathStr, fs.F_OK | fs.R_OK, function(err) {
         if (err) {
-            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it')
+            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it');
         } else {
             try {
                 fileContent = YAML.safeLoad(fs.readFileSync(pathStr, 'utf8'));
@@ -109,7 +113,8 @@ function readYaml(pathStr) {
 }
 
 function createJSONFile(pathStr, content) {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -124,7 +129,7 @@ function createJSONFile(pathStr, content) {
             } else {
                 resFn();
             }
-        })
+        });
     }
     return p;
 }
@@ -139,7 +144,8 @@ function createJSONFileSync(pathStr, content) {
 }
 
 function createYAMLFile(pathStr, content) {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -154,13 +160,14 @@ function createYAMLFile(pathStr, content) {
             } else {
                 resFn();
             }
-        })
+        });
     }
     return p;
 }
 
 function mergeEslintrcFile(esV) {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -179,10 +186,10 @@ function mergeEslintrcFile(esV) {
             }).then(function(c) {
                 Object.assign(eslintrcContent.rules, c['eslintrc_es' + esV] || {});
                 resFn(eslintrcContent);
-            })
+            });
         }).catch(function(r) {
             rejFn(r);
-        })
+        });
     } else {
         rejFn('can find .felint directory!');
     }
@@ -190,7 +197,8 @@ function mergeEslintrcFile(esV) {
 }
 
 function mergeScssLint() {
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -209,10 +217,10 @@ function mergeScssLint() {
             }).then(function(c) {
                 Object.assign(yamlObj.linters, c['scss-lint'] || {});
                 resFn(yamlObj);
-            })
+            });
         }).catch(function(r) {
             rejFn(r);
-        })
+        });
     } else {
         rejFn('can find .felint directory!');
     }
@@ -221,8 +229,8 @@ function mergeScssLint() {
 
 function treeReadFile(filename) {
     // read file content
-    var content = {};
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
@@ -233,7 +241,7 @@ function treeReadFile(filename) {
             resFn(r);
         }).catch(function(r) {
             rejFn(r);
-        })
+        });
     } else {
         rejFn('can not find ' + filename + ' file');
     }
