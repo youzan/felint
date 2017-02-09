@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+/* global Promise */
+
 var program = require('commander');
 var colors = require('colors');
 var childProcess = require('child_process');
 var process = require('process');
-var fs = require('fs');
 var path = require('path');
 var fileUtil = require('./fileUtil.js');
 var checkUpdate = require('./checkUpdate.js');
@@ -23,7 +24,7 @@ var DefaultPackageMap = {
     'eslint-config-airbnb': '9.0.1',
     'eslint-plugin-lean-imports': '0.3.3',
     'eslint': '2.11.1'
-}
+};
 
 // init config files
 function initConfig() {
@@ -44,7 +45,7 @@ function initConfig() {
     }).then(function(r) {
         var gitHookUrl = DEFAUTL_GIT_HOOKS;
         if (r.gitHookUrl) {
-            console.log('use .felintrc file\n'.green)
+            console.log('use .felintrc file\n'.green);
             gitHookUrl = r.gitHookUrl;
         }
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
@@ -59,7 +60,7 @@ function initConfig() {
                 resolveFn();
             }
         );
-    })
+    });
 
     return processPromise;
 }
@@ -67,7 +68,7 @@ function initConfig() {
 
 // run logic shell
 function runSh(cb) {
-    console.log('start run logic shell...\n'.green)
+    console.log('start run logic shell...\n'.green);
     var child = childProcess.exec(
         'sh ./.felint/update_git_hooks.sh',
         function(err) {
@@ -104,7 +105,7 @@ function _check(dependencied, i, keys) {
             if (fileContent.version === version) {
                 console.log(colors.green('你已安装' + key + '@' + version));
             } else {
-                console.log(colors.red(key + '@' + fileContent.version + '包版本错误，可能会导致felint问题，推荐使用'), colors.green(version + '版本'));
+                console.log(colors.red('你已安装' + key + '@' + fileContent.version + '，如果出现问题，请安装'), colors.green(version + '版本尝试解决'));
             }
             if (i < keys.length) {
                 _check(dependencied, i, keys);
@@ -139,9 +140,9 @@ function updateEslintrcFile(eslintrcPath, esV) {
     var p = new Promise(function(res) {
         resFn = res;
     });
-    fileUtil.mergeEslintrcFile(esV).then(function(content) {
-        checkOverRide(eslintrcPath, content).then(function() {
-            fileUtil.createJSONFile(eslintrcPath, content).then(function() {
+    fileUtil.mergeEslintrcFile(esV).then(function(contentStr) {
+        checkOverRide(eslintrcPath, contentStr).then(function() {
+            fileUtil.createJSONFile(eslintrcPath, contentStr).then(function() {
                 console.log('update eslintrc file success'.green);
                 resFn();
             }).catch(function(r) {
@@ -195,10 +196,10 @@ program
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
     .action(function(options) {
-        checkUpdate(VERSION).then(function(isUpdating) {
-            if (isUpdating) {
-                return;
-            }
+        // checkUpdate(VERSION).then(function(isUpdating) {
+        //     if (isUpdating) {
+        //         return;
+        //     }
             var esV = options.ecamScript6 ? '6' : '5';
             initConfig().then(function(res) {
                 runSh(function() {
@@ -213,7 +214,7 @@ program
             }).catch(function() {
                 console.log(colors.red('Error: please try again'));
             });
-        });
+        // });
     });
 
 // 更新配置文件和钩子
@@ -232,7 +233,7 @@ program
             }).catch(function() {
                 console.log(colors.red('Error: please try again'));
             });
-        })
+        });
     });
 
 program
@@ -249,20 +250,20 @@ program
         }, function() {
             updateScsslintYmlFile(scsslintYmlPath);
         });
-    })
+    });
 
 program
     .command('checkrc')
     .description('check there are how many .eslintrc files in your path')
     .action(function() {
-        var info = fileUtil.findUp( process.cwd(), '.eslintrc', 'isFile');
+        var info = fileUtil.findUp(process.cwd(), '.eslintrc', 'isFile');
         var pathStr;
-        while(info) {
+        while (info) {
             pathStr = info.path;
             console.log((pathStr).green);
-            info = fileUtil.findUp( path.dirname(info.dirname), '.eslintrc', 'isFile' );
+            info = fileUtil.findUp(path.dirname(info.dirname), '.eslintrc', 'isFile');
         }
-    })
+    });
 
 program
     .command('checkDependence')
@@ -279,7 +280,7 @@ program
     .action(function() {
         var felintrcPath = process.cwd() + '/.felintrc';
         fileUtil.createJSONFileSync(felintrcPath, {
-            "gitHookUrl": YOUZAN_GIT_HOOKS
+            'gitHookUrl': YOUZAN_GIT_HOOKS
         });
     });
 

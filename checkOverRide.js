@@ -1,3 +1,4 @@
+/* global Promise */
 var readline = require('readline');
 var fileUtil = require('./fileUtil.js');
 var colors = require('colors');
@@ -9,7 +10,8 @@ var colors = require('colors');
  */
 function checkOverRide(filePath, newContentStr) {
     var fileStat = fileUtil.has(filePath);
-    var resFn, rejFn;
+    var resFn;
+    var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
