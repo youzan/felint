@@ -13,7 +13,7 @@ var checkOverRide = require('./checkOverRide.js');
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
-var VERSION = '0.3.0';
+var VERSION = require('./package.json').version;
 
 var DefaultPackageMap = {
     'eslint-plugin-react': '5.1.1',
