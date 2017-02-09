@@ -1,4 +1,3 @@
-
 <p>
 <img width="36px" src="https://img.yzcdn.cn/public_files/2017/02/09/e84aa8cbbf7852688c86218c1f3bbf17.png" alt="youzan">
 </p>
@@ -6,7 +5,6 @@
     <img width="226px" src="https://img.yzcdn.cn/public_files/2017/02/09/232aae6e44455f5d068b9f74b9394f64.png">
 </p>
 <p align="center">A smart way to eslint and scss-lint for front end</p>
-<p align="center"><a href="#install">立即使用</a></p>
 
 ## 什么是Felint
 felint是一个集成了eslint、Git Hooks、scsslint的前端代码检查工具。
@@ -18,7 +16,7 @@ felint是一个集成了eslint、Git Hooks、scsslint的前端代码检查工具
 `felint config`为felint的统一配置信息。在felint中它以一个远程地址的形势存在，你可以在[自定义规则](#customerConfig)中修改其默认地址。在`felint init`或`felint update`命令执行过程中，将从该地址下载具体配置信息。
 
 
-## 一、安装 felint<a name="install"></a>
+## 一、安装 felint
 
 ### 1. 安装准备
 1. MacOS（有赞清一色Mac，欢迎大家拿简历砸过来<joinus@youzan.com>）
