@@ -55,6 +55,25 @@ function findUp(pathStr, target, type) {
     return result;
 }
 
+function readFile(pathStr, resFn, rejFn) {
+    if (!pathStr) {
+        rejFn('path can not be empty');
+    }
+    var pathInfo = path.parse(pathStr);
+    var fileContent;
+    fs.access(pathStr, fs.F_OK | fs.R_OK, function(err) {
+        if (err) {
+            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it');
+        } else {
+            try {
+                fileContent = fs.readFileSync(pathStr, 'utf8');
+            } catch (e) {
+                rejFn('parse ' + pathInfo.base + ' error');
+            }
+            resFn(fileContent);
+        }
+    });
+}
 
 function readJSON(pathStr) {
     var resFn;
@@ -63,66 +82,22 @@ function readJSON(pathStr) {
         resFn = res;
         rejFn = rej;
     });
-    if (!pathStr) {
-        rejFn('path can not be empty');
-    }
-    var pathInfo = path.parse(pathStr);
-    var fileContent;
-    fs.access(pathStr, fs.F_OK | fs.R_OK, function(err) {
-        if (err) {
-            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it');
-        } else {
-            try {
-                fileContent = JSON.parse(fs.readFileSync(pathStr).toString());
-            } catch (e) {
-                console.log(e);
-                rejFn('parse ' + pathInfo.base + ' error');
-            }
-            resFn(fileContent);
-        }
-    });
+    readFile(pathStr, function(fileContent) {
+        resFn(JSON.parse(fileContent));
+    }, rejFn);
     return p;
 }
 
-function readYaml(pathStr) {
+function createJSONFile(pathStr, contentStr) {
     var resFn;
     var rejFn;
     var p = new Promise(function(res, rej) {
         resFn = res;
         rejFn = rej;
     });
-    if (!pathStr) {
-        rejFn('path can not be empty');
-    }
-    var pathInfo = path.parse(pathStr);
-    var fileContent;
-    fs.access(pathStr, fs.F_OK | fs.R_OK, function(err) {
-        if (err) {
-            rejFn(pathInfo.base + ' file does not exist or can not be read, please check it');
-        } else {
-            try {
-                fileContent = YAML.safeLoad(fs.readFileSync(pathStr, 'utf8'));
-            } catch (e) {
-                console.log(e);
-                rejFn('parse ' + pathInfo.base + ' error');
-            }
-            resFn(fileContent);
-        }
-    });
-    return p;
-}
-
-function createJSONFile(pathStr, content) {
-    var resFn;
-    var rejFn;
-    var p = new Promise(function(res, rej) {
-        resFn = res;
-        rejFn = rej;
-    });
-    if (!pathStr || !content) {
+    if (!pathStr || !contentStr) {
         rejFn('neet pathStr and file content');
     } else {
-        var contentStr = JSON.stringify(content || {}, null, 4);
         fs.writeFile(pathStr, contentStr, function(err) {
             if (err) {
                 rejFn(err);
@@ -134,35 +109,12 @@ function createJSONFile(pathStr, content) {
     return p;
 }
 
-function createJSONFileSync(pathStr, content) {
-    if (!pathStr || !content) {
+function createJSONFileSync(pathStr, contentStr) {
+    if (!pathStr || !contentStr) {
         console.log('neet pathStr and file content');
     } else {
-        var contentStr = JSON.stringify(content || {}, null, 4);
         fs.writeFileSync(pathStr, contentStr);
     }
-}
-
-function createYAMLFile(pathStr, content) {
-    var resFn;
-    var rejFn;
-    var p = new Promise(function(res, rej) {
-        resFn = res;
-        rejFn = rej;
-    });
-    if (!pathStr || !content) {
-        rejFn('neet pathStr and file content');
-    } else {
-        var contentStr = YAML.safeDump(content || {});
-        fs.writeFile(pathStr, contentStr, function(err) {
-            if (err) {
-                rejFn(err);
-            } else {
-                resFn();
-            }
-        });
-    }
-    return p;
 }
 
 function mergeEslintrcFile(esV) {
@@ -185,13 +137,47 @@ function mergeEslintrcFile(esV) {
                 return Promise.resolve(DEFAULT_FELINTRC_CONFIG);
             }).then(function(c) {
                 Object.assign(eslintrcContent.rules, c['eslintrc_es' + esV] || {});
-                resFn(eslintrcContent);
+                resFn(JSON.stringify(eslintrcContent || {}, null, 4));
             });
         }).catch(function(r) {
             rejFn(r);
         });
     } else {
         rejFn('can find .felint directory!');
+    }
+    return p;
+}
+
+function readYaml(pathStr) {
+    var resFn;
+    var rejFn;
+    var p = new Promise(function(res, rej) {
+        resFn = res;
+        rejFn = rej;
+    });
+    readFile(pathStr, function(fileContent) {
+        resFn(YAML.safeLoad(fileContent));
+    }, rejFn);
+    return p;
+}
+
+function createYAMLFile(pathStr, contentStr) {
+    var resFn;
+    var rejFn;
+    var p = new Promise(function(res, rej) {
+        resFn = res;
+        rejFn = rej;
+    });
+    if (!pathStr || !contentStr) {
+        rejFn('neet pathStr and file content');
+    } else {
+        fs.writeFile(pathStr, contentStr, function(err) {
+            if (err) {
+                rejFn(err);
+            } else {
+                resFn();
+            }
+        });
     }
     return p;
 }
@@ -216,8 +202,9 @@ function mergeScssLint() {
                 return Promise.resolve(DEFAULT_FELINTRC_CONFIG);
             }).then(function(c) {
                 Object.assign(yamlObj.linters, c['scss-lint'] || {});
-                resFn(yamlObj);
-            });
+                // 直接返回字符串，方便比较、写文件
+                resFn(YAML.safeDump(yamlObj || {}));
+            })
         }).catch(function(r) {
             rejFn(r);
         });
@@ -250,6 +237,7 @@ function treeReadFile(filename) {
 
 module.exports = {
     mergeEslintrcFile: mergeEslintrcFile,
+    readFile: readFile,
     readJSON: readJSON,
     treeReadFile: treeReadFile,
     createJSONFile: createJSONFile,
