@@ -1,8 +1,8 @@
 <p>
-<a href="https://github.com/youzan"><img width="36px" src="https://img.yzcdn.cn/public_files/2017/02/09/e84aa8cbbf7852688c86218c1f3bbf17.png" alt="youzan"></a>
+<a href="https://github.com/youzan" target="_blank"><img width="36px" src="https://img.yzcdn.cn/public_files/2017/02/09/e84aa8cbbf7852688c86218c1f3bbf17.png" alt="youzan"></a>
 </p>
 <p align="center">
-    <a href="http://youzan.github.io/felint/">
+    <a href="http://youzan.github.io/felint/" target="_blank">
         <img width="226px" src="https://img.yzcdn.cn/public_files/2017/02/09/232aae6e44455f5d068b9f74b9394f64.png">
     </a>
 </p>
