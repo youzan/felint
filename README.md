@@ -206,3 +206,6 @@ felint在执行`init`、`use`命令是会读取该字段，用于生成最终规
 'eslint-plugin-jsx-a11y' '@1.2.3'
 'eslint-config-airbnb' '@9.0.1'
 ```
+
+## 七、开源协议
+本项目基于 [MIT](https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89)协议，请自由地享受和参与开源。
