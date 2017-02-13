@@ -1,15 +1,5 @@
-.clearfix::after {
-  content: '';
-  display: block;
-  clear: both;
-}
-
 .header {
   position: relative;
-}
-
-.x-wrapper {
-  position: absolute;
 }
 
 .yz-logo {
