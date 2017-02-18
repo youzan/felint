@@ -367,3 +367,9 @@
         }
     }
 }
+
+@media only screen and (max-width: 913px) {
+    .red-ball {
+        display: none;
+    }
+}
