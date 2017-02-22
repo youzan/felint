@@ -8,6 +8,11 @@
 </p>
 <p align="center">A smart way to eslint and scss-lint for front end</p>
 
+
+[![npm version](https://img.shields.io/npm/v/felint.svg?style=flat)](https://www.npmjs.com/package/felint) [![downloads](https://img.shields.io/npm/dt/felint.svg)](https://www.npmjs.com/package/felint) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+[![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
+
 ## 一、什么是Felint
 felint是一个集成了eslint、Git Hooks、scsslint的前端代码检查工具。
 由于使用了pre-commit钩子，felint将强制让你仅提交符合规范的代码。
