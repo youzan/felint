@@ -42,7 +42,7 @@ function initConfig() {
         console.log(colors.green('use ' + gitHookUrl) + '\n( you can use your own, via https://github.com/youzan/felint/blob/master/README.md )\n');
         console.log('getting the config files from remote server...\n'.green);
         childProcess.exec(
-            'rm -rf ./.git_hooks && rm -rf ./.felint && git clone -b master ' + gitHookUrl + ' .felint && cd .felint && rm -rf ./.git',
+            'rm -rf ./.git_hooks && rm -rf ./.felint && git clone -b dev ' + gitHookUrl + ' .felint && cd .felint && rm -rf ./.git',
             function(err) {
                 if (err) {
                     console.log(err, '\n');
@@ -137,25 +137,25 @@ program
     .option('-5, --ecamScript5', 'default ecamScript5 for your project')
     .option('-6, --ecamScript6', 'default ecamScript6 for your project')
     .action(function(options) {
-        checkUpdate(VERSION).then(function(isUpdating) {
-            if (isUpdating) {
-                return;
-            }
-            var esV = options.ecamScript6 ? '6' : '5';
-            initConfig().then(function(res) {
-                runSh(function() {
-                    var eslintrcPath = process.cwd() + '/.eslintrc';
-                    var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
-                    updateEslintrcFile(eslintrcPath, esV).then(function() {
-                        updateScsslintYmlFile(scsslintYmlPath);
-                    }, function() {
-                        updateScsslintYmlFile(scsslintYmlPath);
-                    });
+        // checkUpdate(VERSION).then(function(isUpdating) {
+        //     if (isUpdating) {
+        //         return;
+        //     }
+        var esV = options.ecamScript6 ? '6' : '5';
+        initConfig().then(function(res) {
+            runSh(function() {
+                var eslintrcPath = process.cwd() + '/.eslintrc';
+                var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
+                updateEslintrcFile(eslintrcPath, esV).then(function() {
+                    updateScsslintYmlFile(scsslintYmlPath);
+                }, function() {
+                    updateScsslintYmlFile(scsslintYmlPath);
                 });
-            }).catch(function() {
-                console.log(colors.red('Error: please try again'));
             });
+        }).catch(function() {
+            console.log(colors.red('Error: please try again'));
         });
+        // });
     });
 
 // 更新配置文件和钩子
@@ -163,18 +163,18 @@ program
     .command('update')
     .description('update felint config files(if you need to use the new eslintrc file or scss-lint file, use "use" command after update)')
     .action(function(options) {
-        checkUpdate(VERSION).then(function(isUpdating) {
-            if (isUpdating) {
-                return;
-            }
-            initConfig().then(function(res) {
-                runSh(false, function() {
-                    console.log('update success!'.green);
-                });
-            }).catch(function() {
-                console.log(colors.red('Error: please try again'));
+        // checkUpdate(VERSION).then(function(isUpdating) {
+        //     if (isUpdating) {
+        //         return;
+        //     }
+        initConfig().then(function(res) {
+            runSh(false, function() {
+                console.log('update success!'.green);
             });
+        }).catch(function() {
+            console.log(colors.red('Error: please try again'));
         });
+        // });
     });
 
 program
