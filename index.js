@@ -10,21 +10,12 @@ var path = require('path');
 var fileUtil = require('./fileUtil.js');
 var checkUpdate = require('./checkUpdate.js');
 var checkOverRide = require('./checkOverRide.js');
+var eslintCli = require('eslint/lib/cli.js');
 
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
 var VERSION = require('./package.json').version;
-
-var DefaultPackageMap = {
-    'eslint-plugin-react': '5.1.1',
-    'babel-eslint': '6.0.4',
-    'eslint-plugin-import': '1.8.1',
-    'eslint-plugin-jsx-a11y': '1.2.3',
-    'eslint-config-airbnb': '9.0.1',
-    'eslint-plugin-lean-imports': '0.3.3',
-    'eslint': '2.11.1'
-};
 
 // init config files
 function initConfig() {
@@ -84,55 +75,6 @@ function runSh(cb) {
     child.stdout.on('data', function(data) {
         console.log(data);
     });
-}
-
-function _check(dependencied, i, keys) {
-    var key = keys[i];
-    var version = DefaultPackageMap[key];
-    var reg = new RegExp('\/' + key + '$');
-    var flag = false;
-    var pathStr = '';
-    i++;
-    dependencied.some(function(value) {
-        if (reg.test(value)) {
-            pathStr = value + '/package.json';
-            return flag = true;
-        }
-        return false;
-    });
-    if (flag) {
-        fileUtil.readJSON(pathStr).then(function(fileContent) {
-            if (fileContent.version === version) {
-                console.log(colors.green('你已安装' + key + '@' + version));
-            } else {
-                console.log(colors.red('你已安装' + key + '@' + fileContent.version + '，如果出现问题，请安装'), colors.green(version + '版本尝试解决'));
-            }
-            if (i < keys.length) {
-                _check(dependencied, i, keys);
-            }
-        }, function(e) {
-            console.log(colors.red('你尚未安装' + key + '@' + version));
-            if (i < keys.length) {
-                _check(dependencied, i, keys);
-            }
-        });
-    } else {
-        console.log(colors.red('你尚未安装' + key + '@' + version));
-        if (i < keys.length) {
-            _check(dependencied, i, keys);
-        }
-    }
-}
-
-function checkPackageVersion() {
-    childProcess.exec(
-        'npm list -g --depth=0 --silent --parseable=true',
-        function(err, stdout) {
-            var dependencied = (stdout.split('\n')) || [];
-            var keys = Object.keys(DefaultPackageMap);
-            _check(dependencied, 0, keys);
-        }
-    );
 }
 
 function updateEslintrcFile(eslintrcPath, esV) {
@@ -264,14 +206,6 @@ program
         }
     });
 
-program
-    .command('checkDependence')
-    .description('check felint dependencies')
-    .action(function() {
-        console.log(colors.green('检查中...'));
-        checkPackageVersion();
-    });
-
 // 改命令用于产生youzan自己的felintrc文件
 program
     .command('youzan')
@@ -281,6 +215,15 @@ program
         fileUtil.createJSONFileSync(felintrcPath, {
             'gitHookUrl': YOUZAN_GIT_HOOKS
         });
+    });
+
+program
+    .command('lint')
+    .option('-j, --js', 'lint javascript files')
+    .action(function(arg, options) {
+        if (options.js) {
+            process.exitCode = eslintCli.execute(arg);
+        }
     });
 
 program.parse(process.argv);

@@ -1,6 +1,6 @@
 {
   "name": "felint",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "eslint and scsslint",
   "keywords": [
     "eslint",
@@ -22,8 +22,15 @@
   ],
   "bin": "index.js",
   "dependencies": {
+    "babel-eslint": "^7.2.1",
     "colors": "~1.1.2",
     "commander": "~2.9.0",
+    "eslint": "^3.18.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-lean-imports": "^0.3.3",
+    "eslint-plugin-react": "^6.10.3",
     "js-yaml": "^3.6.1"
   },
   "bugs": {
