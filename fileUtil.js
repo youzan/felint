@@ -10,7 +10,6 @@ var DEFAULT_FELINTRC_CONFIG = {
     'eslintrc_es6': {
     },
     'scss-lint': {
-
     }
 };
 
@@ -113,6 +112,9 @@ function createJSONFileSync(pathStr, contentStr) {
     if (!pathStr || !contentStr) {
         console.log('neet pathStr and file content');
     } else {
+        if (typeof contentStr === 'object') {
+            contentStr = JSON.stringify(contentStr);
+        }
         fs.writeFileSync(pathStr, contentStr);
     }
 }

@@ -11,6 +11,7 @@ var fileUtil = require('./fileUtil.js');
 var checkUpdate = require('./checkUpdate.js');
 var checkOverRide = require('./checkOverRide.js');
 var eslintCli = require('eslint/lib/cli.js');
+var concat = require('concat-stream');
 
 var DEFAUTL_GIT_HOOKS = 'https://github.com/youzan/felint-config.git';
 var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
@@ -219,14 +220,22 @@ program
 
 program
     .command('lint')
-    .option('-j, --js', 'lint javascript files')
     .action(function(arg, options) {
-        if (options.js) {
-            process.exitCode = eslintCli.execute(arg);
+        process.argv.splice(2, 1);
+        if (process.argv.indexOf('--stdin') > -1) {
+            process.stdin.pipe(concat({ encoding: 'string' }, function(text) {
+                process.exitCode = eslintCli.execute(process.argv, text);
+            }));
+        } else {
+            process.exitCode = eslintCli.execute(process.argv);
         }
     });
 
 program.parse(process.argv);
+
+process.once('uncaughtException', function(err) {
+    process.exitCode = 1;
+});
 
 if (!process.argv.slice(2).length) {
     program.outputHelp();
