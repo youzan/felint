@@ -234,9 +234,7 @@ program
 // 调用eslint/stylelint校验js/css
 program
     .command('lint')
-    .option('-js, --javascript', '检测javascript代码')
-    .option('-css, --css', '检测css代码')
-    .description('使用felint检测js/css代码，-h查看更多options')
+    .description('使用felint检测js代码')
     .action(function(arg, options) {
         process.argv.splice(2, 1);
         if (process.argv.indexOf('--stdin') > -1) {
