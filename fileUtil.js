@@ -138,7 +138,7 @@ function mergeEslintrcFile(type) {
             }, function(r) {
                 return Promise.resolve(DEFAULT_FELINTRC_CONFIG);
             }).then(function(c) {
-                Object.assign(eslintrcContent.rules, c['eslintrc_' + type + '.json'] || {});
+                Object.assign(eslintrcContent.rules, c['eslintrc_' + type] || {});
                 resFn(JSON.stringify(eslintrcContent || {}, null, 4));
             });
         }).catch(function(r) {

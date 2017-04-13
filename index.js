@@ -105,7 +105,7 @@ function updateEslintrcFile(eslintrcPath, type) {
 }
 
 function updateScsslintYmlFile(scsslintYmlPath) {
-    if (!updateScsslintYmlFile) return;
+    if (!scsslintYmlPath) return;
     var resFn;
     var p = new Promise(function(res) {
         resFn = res;
@@ -192,7 +192,7 @@ program
     .option('-t, --type [value]', '指定不同的代码规范，目前支持react(es6),vue(es6),node,es6,es5，默认es5')
     .action(function(options) {
         var type = options.type || 'es5';
-        if (!supportType.indexOf(type) > -1) {
+        if (supportType.indexOf(type) === -1) {
             type = 'es5';
         }
         var eslintrcPath = process.cwd() + '/.eslintrc';
