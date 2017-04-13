@@ -119,7 +119,7 @@ function createJSONFileSync(pathStr, contentStr) {
     }
 }
 
-function mergeEslintrcFile(esV) {
+function mergeEslintrcFile(type) {
     var resFn;
     var rejFn;
     var p = new Promise(function(res, rej) {
@@ -127,10 +127,10 @@ function mergeEslintrcFile(esV) {
         rejFn = rej;
     });
     // 找到.felint目录
-    var gitHookPath = findUp(process.cwd(), '.felint', 'isDirectory');
-    if (gitHookPath) {
+    var felintConfigPath = findUp(process.cwd(), '.felint', 'isDirectory');
+    if (felintConfigPath) {
         // 读取对应eslintrc文件
-        readJSON(gitHookPath.path + '/.eslintrc_es' + esV).then(function(r) {
+        readJSON(felintConfigPath.path + '/.eslintrc_' + type + '.json').then(function(r) {
             var eslintrcContent = r;
             // 尝试读取 felintrc文件
             treeReadFile('.felintrc').then(function(c) {
@@ -138,7 +138,7 @@ function mergeEslintrcFile(esV) {
             }, function(r) {
                 return Promise.resolve(DEFAULT_FELINTRC_CONFIG);
             }).then(function(c) {
-                Object.assign(eslintrcContent.rules, c['eslintrc_es' + esV] || {});
+                Object.assign(eslintrcContent.rules, c['eslintrc_' + type + '.json'] || {});
                 resFn(JSON.stringify(eslintrcContent || {}, null, 4));
             });
         }).catch(function(r) {

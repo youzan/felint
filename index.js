@@ -18,6 +18,8 @@ var YOUZAN_GIT_HOOKS = 'http://gitlab.qima-inc.com/fe/felint-config.git';
 
 var VERSION = require('./package.json').version;
 
+var supportType = ['react', 'vue', 'es6', 'es5', 'node'];
+
 // init config files
 function initConfig() {
     console.log('start init config files...\n'.green);
@@ -78,12 +80,12 @@ function runSh(cb) {
     });
 }
 
-function updateEslintrcFile(eslintrcPath, esV) {
+function updateEslintrcFile(eslintrcPath, type) {
     var resFn;
     var p = new Promise(function(res) {
         resFn = res;
     });
-    fileUtil.mergeEslintrcFile(esV).then(function(contentStr) {
+    fileUtil.mergeEslintrcFile(type).then(function(contentStr) {
         checkOverRide(eslintrcPath, contentStr).then(function() {
             fileUtil.createJSONFile(eslintrcPath, contentStr).then(function() {
                 console.log('update eslintrc file success'.green);
@@ -103,6 +105,7 @@ function updateEslintrcFile(eslintrcPath, esV) {
 }
 
 function updateScsslintYmlFile(scsslintYmlPath) {
+    if (!updateScsslintYmlFile) return;
     var resFn;
     var p = new Promise(function(res) {
         resFn = res;
@@ -131,23 +134,28 @@ function updateScsslintYmlFile(scsslintYmlPath) {
 program
     .version(VERSION)
     .command('init')
-    .description('by default, felint will copy the eslint config file, css lint config and git hooks \
-      from https://github.com/youzan/felint-config. \
-      You can use your own by forking our felint-config and specifying the git url in .felintrc file. \
-      More detail please read: https://github.com/youzan/felint/blob/master/README.md')
-    .option('-5, --ecamScript5', 'default ecamScript5 for your project')
-    .option('-6, --ecamScript6', 'default ecamScript6 for your project')
+    .description('初始化felint，-h查看跟多options。更多信息请参考：https://github.com/youzan/felint/blob/master/README.md')
+    .option('-t, --type [value]', '指定不同的代码规范，目前支持react(es6),vue(es6),node,es6,es5，默认es5')
     .action(function(options) {
         // checkUpdate(VERSION).then(function(isUpdating) {
         //     if (isUpdating) {
         //         return;
         //     }
-        var esV = options.ecamScript6 ? '6' : '5';
+        
+        var type = options.type || 'es5';
+        if (supportType.indexOf(type) === -1) {
+            type = 'es5';
+        }
+        var eslintrcPath = process.cwd() + '/.eslintrc';
+        var scsslintYmlPath = '';
+        if (type !== 'node') {
+            scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
+        }
         initConfig().then(function(res) {
             runSh(function() {
                 var eslintrcPath = process.cwd() + '/.eslintrc';
                 var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
-                updateEslintrcFile(eslintrcPath, esV).then(function() {
+                updateEslintrcFile(eslintrcPath, type).then(function() {
                     updateScsslintYmlFile(scsslintYmlPath);
                 }, function() {
                     updateScsslintYmlFile(scsslintYmlPath);
@@ -162,7 +170,7 @@ program
 // 更新配置文件和钩子
 program
     .command('update')
-    .description('update felint config files(if you need to use the new eslintrc file or scss-lint file, use "use" command after update)')
+    .description('更新felint的配置文件')
     .action(function(options) {
         // checkUpdate(VERSION).then(function(isUpdating) {
         //     if (isUpdating) {
@@ -180,14 +188,19 @@ program
 
 program
     .command('use')
-    .description('use different ecamScript version for your project or directory')
-    .option('-5, --ecamScript5', 'use ecamScript5 for your project')
-    .option('-6, --ecamScript6', 'use ecamScript6 for your project')
+    .description('在当前目录下运用对应规则文件，-h查看跟多options')
+    .option('-t, --type [value]', '指定不同的代码规范，目前支持react(es6),vue(es6),node,es6,es5，默认es5')
     .action(function(options) {
-        var esV = options.ecamScript6 ? '6' : '5';
+        var type = options.type || 'es5';
+        if (!supportType.indexOf(type) > -1) {
+            type = 'es5';
+        }
         var eslintrcPath = process.cwd() + '/.eslintrc';
-        var scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
-        updateEslintrcFile(eslintrcPath, esV).then(function() {
+        var scsslintYmlPath = '';
+        if (type !== 'node') {
+            scsslintYmlPath = process.cwd() + '/.scss-lint.yml';
+        }
+        updateEslintrcFile(eslintrcPath, type).then(function() {
             updateScsslintYmlFile(scsslintYmlPath);
         }, function() {
             updateScsslintYmlFile(scsslintYmlPath);
@@ -196,7 +209,7 @@ program
 
 program
     .command('checkrc')
-    .description('check there are how many .eslintrc files in your path')
+    .description('检测当前目录及其父目录上的eslintrc文件')
     .action(function() {
         var info = fileUtil.findUp(process.cwd(), '.eslintrc', 'isFile');
         var pathStr;
@@ -207,10 +220,10 @@ program
         }
     });
 
-// 改命令用于产生youzan自己的felintrc文件
+// 该命令用于产生youzan自己的felintrc文件
 program
     .command('youzan')
-    .description('create Youzan org felintrc file')
+    .description('创建有赞私有felintrc文件')
     .action(function() {
         var felintrcPath = process.cwd() + '/.felintrc';
         fileUtil.createJSONFileSync(felintrcPath, {
@@ -218,8 +231,12 @@ program
         });
     });
 
+// 调用eslint/stylelint校验js/css
 program
     .command('lint')
+    .option('-js, --javascript', '检测javascript代码')
+    .option('-css, --css', '检测css代码')
+    .description('使用felint检测js/css代码，-h查看更多options')
     .action(function(arg, options) {
         process.argv.splice(2, 1);
         if (process.argv.indexOf('--stdin') > -1) {
