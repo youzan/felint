@@ -6,12 +6,14 @@
         <img width="226px" src="https://img.yzcdn.cn/public_files/2017/02/09/232aae6e44455f5d068b9f74b9394f64.png">
     </a>
 </p>
-<p align="center">A smart way to eslint and stylelint for front end</p>
+<p align="center">A smart way to eslint stylelint and git hooks for front end</p>
 
 
 [![npm version](https://img.shields.io/npm/v/felint.svg?style=flat)](https://www.npmjs.com/package/felint) [![downloads](https://img.shields.io/npm/dt/felint.svg)](https://www.npmjs.com/package/felint) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
+
+## 从0.3.0迁移到1.0.0
 
 ## 一、什么是Felint
 felint是一个集成了eslint、Git Hooks、stylelint的前端代码检查工具。

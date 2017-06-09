@@ -1,3 +1,13 @@
+## 1.0.0
+修改:
+
+1. felint-config重新设计
+2. 删除felint checkDependence、felint checkrc命令
+3. 增加felint export命令
+4. 对felint init、felint use命令的option进行修改
+5. 去掉对全局eslint/scss_lint的依赖
+6. 使用stylelint替换scss_lint进行css校验
+
 ## 0.3.0
 修改:
 
