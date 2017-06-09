@@ -30,6 +30,8 @@ program
             // init依赖必须安装在全局
             await dependence.install(true);
             updateHooks.update();
+            // 移除老规则文件
+            sh.exec('rm ./.eslintrc ./.scss-lint.yml');
             await ruleFile.createIgnore();
             let plan = options.plan || felintrc.getPlan() || 'default';
             await felintrc.set({
