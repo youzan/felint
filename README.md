@@ -14,6 +14,7 @@
 [![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
 
 ## 从0.3.0迁移到1.0.0
+[详情请参考这里。](https://github.com/youzan/felint/blob/hotfix/20170319-refactor-lcj/0_3_0To1_0_0.md)
 
 ## 一、什么是Felint
 felint是一个集成了eslint、Git Hooks、stylelint的前端代码检查工具。
