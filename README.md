@@ -14,7 +14,7 @@
 [![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
 
 ## 一、什么是Felint
-felint是一个集成了eslint、Git Hooks、scsslint的前端代码检查工具。
+felint是一个集成了eslint、Git Hooks、stylelint的前端代码检查工具。
 由于使用了pre-commit钩子，felint将强制让你仅提交符合规范的代码。
 
 ## 二、名词解析
