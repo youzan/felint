@@ -6,79 +6,31 @@ NC='\033[0m'
 LGREEN='\033[1;32m'
 my_dir="$(dirname "$0")"
 
-# install package
-installPackage()
-{
-  pn=$1
-  printf "\n========== Install ${pn} start ==========\n"
-  npm install -g "$pn"
-  printf "\n========== Install ${pn} done ==========\n"
-}
+# Check MultiHook
 
-# check if package is already installed
-# if not install it
-checkAndInstallPackage()
-{
-  pn=$1
-  v=$2
-  if [[ $packageList == '' ]]; then
-    packageList=`npm list -g --depth=0 --silent --parseable=true 2> /dev/null`
-  fi
-  sh "$my_dir/checkPackage.sh" "$pn" "$v" "$packageList"
-  result=$?
-  if [[ $result == '1' ]]; then
-    printf "${RED}${pn}包版本错误，可能会导致felint问题，推荐使用${LGREEN}${v}版本${NC}"
-  fi
+ALL_HOOKS_FOLDER=$projectPath/.multi_hooks/all_hooks
 
-  if [[ $result == '2' ]]; then
-    installPackage "${pn}""@${v}"
-  fi
-}
+APPLICATION=felint
 
-# Check for eslint
-checkAndInstallPackage 'eslint' '2.11.1'
+printf '\n========== 开始安装multi_hooks ==========\n'
+curl http://gitlab.qima-inc.com/delai/youzan_git_kit/raw/master/init_multi_hooks.sh | sh
+printf '\n========== 安装multi_hooks完成 ==========\n'
 
-# Check for scss_lint
-which scss-lint &> /dev/null
-if [[ "$?" == 1 ]]; then
-  printf '\n========== Install scss_lint@0.48.0 start ==========\n'
-  gem install scss_lint --version=0.48.0
-  printf '\n========== Install scss_lint@0.48.0 done ==========\n'
+if [ -d $ALL_HOOKS_FOLDER ];then
+  rm -rf $ALL_HOOKS_FOLDER/$APPLICATION
+  mkdir -p $ALL_HOOKS_FOLDER/$APPLICATION
+  cd $ALL_HOOKS_FOLDER/$APPLICATION
+  # 2、下面这里填脚本地址
+  printf '\n========== init hook ==========\n'
+  ln -s ../../../.felint/hooks/pre-commit "./pre-commit"
+  ln -s ../../../.felint/hooks/commit-msg "./commit-msg"
+  echo '当前目录里的 commit-msg 和 pre-commit 实际上被软链到了 '$projectPath'/.felint 下真正的脚本文件，相应的钩子触发的时候会被执行。\n
+  只是勾子通过multihook来出发而已，后续的 felint 钩子、配置的更新都没有差别' > ./README
+
+  printf '\n========== chmod hook ==========\n'
+  chmod -R a+x $projectPath/.multi_hooks
+  printf '\n========== chmod hook done ==========\n'
+  printf '\n========== init hook done ==========\n'
 fi
-
-# Check eslint-plugin-react
-checkAndInstallPackage 'eslint-plugin-react' '5.1.1'
-checkAndInstallPackage 'babel-eslint' '6.0.4'
-checkAndInstallPackage 'eslint-plugin-import' '1.8.1'
-checkAndInstallPackage 'eslint-plugin-jsx-a11y' '1.2.3'
-checkAndInstallPackage 'eslint-config-airbnb' '9.0.1'
-checkAndInstallPackage 'eslint-plugin-lean-imports' '0.3.3'
-
-# cd to hooks folder
-cd ./.felint
-
-printf '\n========== init .eslintignore start ==========\n'
-cp ./.eslintignore "$projectPath"
-printf '\n========== init .eslintignore done ==========\n'
-
-printf '\n========== init hook ==========\n'
-mkdir "${projectPath}/.git/hooks/"
-hooks="${projectPath}/.git/hooks/"
-rm -f "${hooks}/pre-commit" "${hooks}/pre-push" "${hooks}/post-merge" "${hooks}/commit-msg"
-ln -s ../../.felint/pre-commit "$hooks"
-ln -s ../../.felint/pre-push "$hooks"
-ln -s ../../.felint/commit-msg "$hooks"
-printf '\n========== chmod hook ==========\n'
-chmod a+x "./pre-commit"
-chmod a+x "./pre-push"
-chmod a+x "./commit-msg"
-printf '\n========== chmod hook done ==========\n'
-
-printf '\n========== init hook done ==========\n'
-
-
-
-printf '\n\n如eslint和eslint-plugin-react未安装成功：\033[32m npm install -g eslint && npm install -g eslint-plugin-react\033[0m'
-printf '\n\n如 scss_lint 未安装成功：\033[32m gem install scss_lint \033[0m\n'
 
 printf '\n========== ALL DONE, THANKS\n'
