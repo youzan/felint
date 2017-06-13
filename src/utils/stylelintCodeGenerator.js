@@ -20,5 +20,5 @@ let codePattern = `
 let localCodePattern = 'module.exports = <%content%>';
 
 export default (content, islocal) => {
-    return islocal ? localCodePattern.replace('<%content%>', content) : codePattern.replace('<%content%>', content).replace('"<%path%>', 'ap+"');
+    return islocal ? localCodePattern.replace(/<%content%>/g, content) : codePattern.replace(/<%content%>/g, content).replace(/"<%path%>/g, 'ap+"');
 };
