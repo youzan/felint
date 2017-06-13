@@ -194,14 +194,14 @@ felint youzan
 
 #### 4. ruleExtends
 
-该字段内的值会跟`felint-config`中同名规则文件的内容做merge，生成最终的规则文件。
+该字段内的值会跟`felint-config`的`rules`目录下的**同名规则文件**的内容做merge，生成最终的规则文件。
 
 **e.g.**
 
 ```
 {
     "plan": "es6",
-    ".eslintrc_es6": {
+    ".eslintrc_es6.json": {
         "rules": {
             "no-console": 0
         }
