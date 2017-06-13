@@ -24,38 +24,45 @@
     <section class="logo-wrapper">
         <img class="logo" alt="felint" src="./assets/without-dot.png">
     </section>
-    <section class="slogan">A smart way to eslint and scss-lint for front end</section>
+    <section class="slogan">A smart way to eslint and stylelint for front end</section>
     <a class="button" href="#install">立即使用</a>
 </header>
 
-<h2 id="toc_0">什么是Felint</h2>
+<p><a href="https://www.npmjs.com/package/felint"><img src="https://img.shields.io/npm/v/felint.svg?style=flat" alt="npm version"></a> <a href="https://www.npmjs.com/package/felint"><img src="https://img.shields.io/npm/dt/felint.svg" alt="downloads"></a> <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
 
-<p>felint是一个集成了eslint、Git Hooks、scsslint的前端代码检查工具。
+<p><a href="https://nodei.co/npm/felint/"><img src="https://nodei.co/npm/felint.png?downloads=true&amp;downloadRank=true" alt="NPM"></a></p>
+
+<h2 id="toc_0">一、什么是Felint</h2>
+
+<p>felint是一个集成了eslint、Git Hooks、stylelint的前端代码检查工具。
 由于使用了pre-commit钩子，felint将强制让你仅提交符合规范的代码。</p>
 
-<h2 id="toc_1">名词解析</h2>
+<h2 id="toc_1">二、名词解析</h2>
 
-<h3 id="toc_2">1. felint config</h3>
+<h4 id="toc_2">.felintrc</h4>
 
-<p><code>felint config</code>为felint的统一配置信息。在felint中它以一个远程地址的形势存在，你可以在<a href="#customerConfig">自定义规则</a>中修改其默认地址。在<code>felint init</code>或<code>felint update</code>命令执行过程中，将从该地址下载具体配置信息。</p>
+<p><strong>.felintrc</strong>用于配置<code>felint-config</code>的git仓库地址、对默认规则进行一定程度的自定义覆盖、记录该项目所使用的代码规则方案等。详细信息<a href="#felintrc">请看这里</a>。</p>
 
-<h2 id="toc_3">一、安装 felint<a name="install"></a></h2>
+<h4 id="toc_3">felint-config</h4>
 
-<h3 id="toc_4">1. 安装准备</h3>
+<p><code>felint-config</code>为felint的统一配置信息。在felint中它以一个远程地址的形势存在，你可以在<a href="#felintrc">.felintrc</a>中修改其默认地址。详细信息<a href="#felintconfig">请看这里</a>。</p>
+
+<h2 id="toc_4">三、安装 felint</h2>
+
+<h4 id="toc_5">1. 安装准备</h4>
 
 <ol>
 <li>MacOS（有赞清一色Mac，欢迎大家拿简历砸过来<a href="mailto:joinus@youzan.com">joinus@youzan.com</a>）</li>
 <li>由于felint本身为npm包，所以安装前请确保你的电脑已安装node和npm </li>
-<li>felint使用gem安装scss检测工具scss_lint，所以请确保你已安装gem</li>
 </ol>
 
-<h3 id="toc_5">2. 安装</h3>
+<h4 id="toc_6">2. 安装</h4>
 
 <div><pre><code class="language-none">npm install -g felint</code></pre></div>
 
-<h2 id="toc_6">二、快速开始</h2>
+<h2 id="toc_7">四、快速开始</h2>
 
-<h3 id="toc_7">1. 使用felint初始化项目</h3>
+<h4 id="toc_8">使用felint初始化项目</h4>
 
 <p>进入到你项目的根目录，运行</p>
 
@@ -63,16 +70,17 @@
 
 <p>felint初始化完成后你的项目中将会产生如下目录和文件：</p>
 
-<div><pre><code class="language-none">|_.felint         // felint config文件夹
-|_.eslintrc       // eslint 规则文件，用于检测js代码
-|_.eslintignore   // eslint ignore文件
-|_.scss-lint.yml  // scss 规则文件，用于检测scss代码</code></pre></div>
+<div><pre><code class="language-none">|_.felint          // felint config文件夹
+|_.eslintrc.json   // eslint 规则文件，用于检测js代码
+|_.eslintignore    // eslint ignore配置文件
+|_.stylelintrc.js  // stylelint 规则文件，用于检测css代码
+|_.stylelintignore // stylelint ignore配置文件</code></pre></div>
 
-<h4 id="toc_8">—对于独立开发人员</h4>
+<h4 id="toc_9"><em>对于独立开发人员</em></h4>
 
 <p>推荐将这些新增文件加入对应项目的git仓库以备份。</p>
 
-<h4 id="toc_9">—团队开发</h4>
+<h4 id="toc_10"><em>团队开发</em></h4>
 
 <p>推荐将这些新增文件加入对应项目的git仓库，方便团队内部其他成员同步。</p>
 
@@ -82,35 +90,34 @@
 
 <p>felint将自动载入git的pre-commit钩子，当你在运行<code>git commit</code>时自动检测待提交的文件是否符合相应规范。如无法通过校验，felint将拒绝此次提交。</p>
 
-<h2 id="toc_10">三、felint命令详解</h2>
+<h2 id="toc_11">五、felint命令详解</h2>
 
-<h3 id="toc_11">1. felint init</h3>
+<h4 id="toc_12">1. felint init</h4>
 
-<div><pre><code class="language-none">felint init [options]
+<div><pre><code class="language-none">felint init -p planname
 
--options:
--5: 默认option，用于生成符合es5的JavaScript规范
--6: 扩展了airbnb的规范，用于生成符合es6并兼容react的JavaScript规范</code></pre></div>
+planname:
+用于指定初始化规则方案</code></pre></div>
 
-<p>执行<code>felint init</code>命令后，felint将从你指定的<a href="#customerConfig">自定义规则</a>中读取<code>felint config</code>地址或从默认地址<a href="https://github.com/youzan/felint-config">https://github.com/youzan/felint-config</a>下载所需的默认的配置文件并保存在项目的<code>.felint</code>文件夹下。</p>
+<p>执行<code>felint init</code>命令后，felint将从<a href="#customerConfig">.felintrc</a>中读取<code>felint config</code>地址或（如没有.felintrc文件）使用默认地址<a href="https://github.com/youzan/felint-config">https://github.com/youzan/felint-config</a>下载所需的默认的配置文件并保存在项目的<code>.felint</code>文件夹下。</p>
 
 <p>当配置文件下载完成后，felint将自动执行配置文件内部的初始化脚本文件，载入git钩子，并生成最终规则文件。</p>
 
-<h3 id="toc_12">2. felint update</h3>
+<h4 id="toc_13">2. felint update</h4>
 
 <div><pre><code class="language-none">felint update</code></pre></div>
 
-<p>执行<code>felint update</code>命令后，felint将从你指定的<a href="#customerConfig">自定义规则</a>中读取<code>felint config</code>地址或从默认地址<a href="https://github.com/youzan/felint-config">https://github.com/youzan/felint-config</a>重新下载所需的默认的配置文件并执行初始化脚本，载入git钩子。</p>
-
 <p><code>felint update</code>对比于<code>felint init</code>命令，取消了生成最终规则文件的操作。</p>
 
-<h3 id="toc_13">3. felint use</h3>
+<h4 id="toc_14">3. felint use</h4>
 
 <div><pre><code class="language-none">felint use [options]
 
--options:
--5: 用于生成符合es5的JavaScript规范
--6: 扩展了airbnb的规范，用于生成符合es6并兼容react的JavaScript规范</code></pre></div>
+options:
+-p [value]: 为当前目录使用指定的规则方案
+-f value: 为当前目录使用指定的规则文件</code></pre></div>
+
+<p>规则方案和规则文件请参见<a href="#felintconfig">felint-config介绍</a></p>
 
 <p>使用场景：</p>
 
@@ -122,90 +129,135 @@
 推荐做法:</p>
 
 <div><pre><code class="language-none">cd A project
-felint init
+felint init -p es5
 cd C page fold
-felint use -6</code></pre></div>
+felint use -p es6</code></pre></div>
 
 <p><code>felint use</code>命令将在<code>c page fold</code>下产生成对应版本的规则文件。此时<code>C page fold</code>下的代码将使用自己的规则文件进行校验。</p>
 
-<p><strong><em>注意，在使用<code>felint use</code>命令前必须确保当前目录或其父级目录上已运行过<code>felint init</code>或者<code>felint update</code>。</em></strong></p>
+<p><strong><em>注意，在使用<code>felint use</code>命令前必须确保当前目录或其父级目录上已运行过<code>felint init</code>。</em></strong></p>
 
-<h3 id="toc_14">4. felint checkrc</h3>
+<h4 id="toc_15"><a name="felintExport"></a>4. felint export</h4>
 
-<div><pre><code class="language-none">felint checkrc</code></pre></div>
+<div><pre><code class="language-none">felint export</code></pre></div>
 
-<p>由于eslint规则可以继承，所以可能存在多个eslint规则文件，并对某个js文件的语法检测造成影响。</p>
+<p>该命令用于在当前项目下安装默认eslint/stylelint及其依赖，并在当前项目的package.json注入相应的devDependencies。可参考<a href="#felintExportCase">felint export使用例子</a>。</p>
 
-<p>该命令用于打印出当前目录及其父级目录上存在的所有eslint规则文件路径，方便检测由于存在多个规则文件所造成的问题。</p>
-
-<h3 id="toc_15">5. felint checkDependence</h3>
-
-<div><pre><code class="language-none">felint checkDependence</code></pre></div>
-
-<p>由于felint是一个npm包，它默认依赖很多其他的第三方全局npm包，所以当这些被felint所依赖的全局包缺失或者版本不匹配时可能导致felint功能不可用。</p>
-
-<p>该命令用于检测felint依赖的全局npm包是否存在以及版本是否符合要求。</p>
-
-<p><strong><em>注意，该命令只有当你使用默认<code>felint config</code>时才有意义，如你使用<a href="#gitHookUrl">gitHookUrl</a>来使用自己的config，该命令无意义</em></strong></p>
-
-<h3 id="toc_16">6. felint youzan</h3>
+<h4 id="toc_16">4. felint youzan</h4>
 
 <div><pre><code class="language-none">felint youzan</code></pre></div>
 
 <p>该命令用于生成基于Youzan的<a href="#felintrc">.felintrc</a>文件。</p>
 
-<h2 id="toc_17">四、felint高阶</h2>
+<h2 id="toc_17">六、felint高阶</h2>
 
-<h3 id="toc_18">1. <a name="changeDefaultRule">修改默认规则</a></h3>
+<h4 id="toc_18">1. <a name="changeDefaultRule"></a>修改默认规则</h4>
 
-<p>如果你需要修改默认的scss规则或者eslint规则，请不要直接修改对应目录下的<code>.eslintrc</code>和<code>.scss-lint.yml</code>文件，避免别人重新执行<code>felint init</code>时重新覆盖为默认规则（虽然在覆盖之前会有确认覆盖的交互提示）。</p>
+<p>如果你需要修改默认的stylelint规则或者eslint规则，请不要直接修改对应目录下的<code>.eslintrc.json</code>和<code>.stylelintrc.js</code>文件，避免别人重新执行<code>felint init</code>时重新覆盖为默认规则（虽然在覆盖之前会有确认覆盖的交互提示）。</p>
 
 <p>推荐方案为修改<a href="#felintrc">.felintrc</a>文件，具体修改方案请移步<a href="#felintrc">.felintrc</a>文件说明。</p>
 
-<h3 id="toc_19">2. <a name="customerConfig">自定义规则</a></h3>
+<h4 id="toc_19">2. <a name="customerConfig"></a> 自定义felint-config</h4>
 
-<p>如果你不想使用我们默认的<a href="https://github.com/youzan/felint-config">felint-config</a>校验，你可以fork出来修改为自己的felint-config（修改方法参考 <a href="https://github.com/youzan/felint-config/blob/master/README.md">felint-config 的 readme</a> ），然后在<a href="#felintrc">.felintrc</a>文件的<a href="#gitHookUrl">gitHookUrl</a>字段中手动配置你自己的 felint-config 仓库地址。</p>
+<p>如果你不想使用我们默认的<a href="https://github.com/youzan/felint-config">felint-config</a>校验，你可以fork出来修改为自己的felint-config（修改方法参考 <a href="https://github.com/youzan/felint-config/blob/master/README.md">felint-config 的 readme</a> ），然后在<a href="#felintrc">.felintrc</a>文件的<a href="#configRep">configRep</a>字段中手动配置你自己的 felint-config 仓库地址。</p>
 
 <p>然后重新执行一次 <code>felint init</code> 即可。</p>
 
-<h2 id="toc_20">五、<a name="felintrc">.felintrc文件</a></h2>
+<h4 id="toc_20">3. <a name="felintExportCase"></a>使用Felint快速生成基础配置</h4>
+
+<p>对于特殊项目，可能其依赖的eslint/stylelint插件跟其他项目不兼容，则felint支持<code>export</code>方法，将<code>felint-config</code>指定的默认依赖通过<code>devDependencies</code>的方式安装在当前项目中同时在项目下生成基础规则文件(eslintrc/stylelintrc)，之后可在基础规则上随意修改。</p>
+
+<h2 id="toc_21">七、<a name="felintrc"></a>.felintrc文件</h2>
+
+<p><strong>.felintrc</strong>用于配置<code>felint-config</code>的git仓库地址、对默认规则进行一定程度的自定义覆盖、记录该项目所使用的代码规则方案以及记录该项目是否被<code>felint export</code>过。</p>
+
+<p><strong>e.g.</strong></p>
 
 <div><pre><code class="language-none">{
-    &quot;gitHookUrl&quot;: &quot;your own felint config url&quot;,
-    &quot;eslintrc_es5&quot;: {
-    },
-    &quot;eslintrc_es6&quot;: {
-    },
-    &quot;scss-lint&quot;: {}
+    configReg   // 用于指定使用的felint-config仓库地址
+    plan        // 用于指定当前项目所使用的规则方案，比如es5/es6/vue/react等
+    local       // 用于指定该项目下是否执行过felint export
+    ruleExtends // 该字段并不叫这个名字，只是表明其用处
 }</code></pre></div>
 
-<h3 id="toc_21">1. <a name="gitHookUrl">gitHookUrl</a></h3>
+<h4 id="toc_22">1. <a name="configRep"></a>configRep</h4>
 
 <p>该地址用于指定<code>felint config</code>的仓库地址，如果你有自己的config仓库，请指定它。指定之后，felint的<code>init</code>, <code>update</code>命令都将从该地址拉取配置。</p>
 
-<h3 id="toc_22">2. eslintrc<em>es5 eslintrc</em>es6</h3>
+<h4 id="toc_23">2. plan</h4>
 
-<p>该字段用于覆盖对应版本的默认javascript规则。</p>
+<p>该字段用于记录执行<code>felint init -p value</code>时所使用的规范方案（如果不指定则为default）。</p>
 
-<p>felint在执行<code>init</code>、<code>use</code>命令是会读取该字段，用于生成最终规则文件。</p>
+<h4 id="toc_24">3. local</h4>
 
-<h3 id="toc_23">3. scss-lint</h3>
+<p>该字段记录在当前目录下是否执行过<code>felint export</code>命令。</p>
 
-<p>该字段用于覆盖默认scss规则。</p>
+<h4 id="toc_25">4. ruleExtends</h4>
 
-<p>felint在执行<code>init</code>、<code>use</code>命令是会读取该字段，用于生成最终规则文件。</p>
+<p>该字段内的值会跟<code>felint-config</code>中同名规则文件的内容做merge，生成最终的规则文件。</p>
 
-<h2 id="toc_24">六、felint依赖</h2>
+<p><strong>e.g.</strong></p>
 
-<p>默认<code>felint config</code>依赖的全局包如下：</p>
+<div><pre><code class="language-none">{
+    &quot;plan&quot;: &quot;es6&quot;,
+    &quot;.eslintrc_es6&quot;: {
+        &quot;rules&quot;: {
+            &quot;no-console&quot;: 0
+        }
+    }
+}</code></pre></div>
 
-<div><pre><code class="language-none">&#39;eslint&#39; &#39;@2.11.1&#39;
-&#39;scss_lint&#39; &#39;--version=0.48.0&#39;
-&#39;eslint-plugin-react&#39; &#39;@5.1.1&#39;
-&#39;babel-eslint&#39; &#39;@6.0.4&#39;
-&#39;eslint-plugin-import&#39; &#39;@1.8.1&#39;
-&#39;eslint-plugin-jsx-a11y&#39; &#39;@1.2.3&#39;
-&#39;eslint-config-airbnb&#39; &#39;@9.0.1&#39;</code></pre></div>
+<p>felint在执行<code>init</code>、<code>use</code>命令后最终生成的<code>.eslintrc.json</code>文件内容将会整合felint-config目录下rules/.eslintrc<em>es6的内容和.felintrc内的.eslintrc</em>es6的值。</p>
+
+<p><strong>注意，在这里请不要对plugin等需要依赖第三方包的字段进行修改，否则将可能导致错误，如需修改plugin，请使用<a href="#felintExport">felint export</a>命令</strong></p>
+
+<h2 id="toc_26">八、 <a name="felintconfig"></a>felint-config</h2>
+
+<p>你可以默认使用我们提供的官方的<code>felint-config</code>也可以根据自己团队的需要在工程目录里的<a href="#felintrc"><strong>.felintrc</strong></a>里去指定。</p>
+
+<p>关于<code>felint-config</code>的目录结构，可以看<a href="https://github.com/youzan/felint-config/tree/felint-1.x-config-example">这里</a>。</p>
+
+<p><code>felint-config</code>必须提供一个<code>config.js</code>文件作为<code>Felint</code>的功能配置。</p>
+
+<p>以下为一个<code>config.js</code>的例子:</p>
+
+<div><pre><code class="language-javascript">module.exports = {
+    dependence: {
+        npm: {
+            &quot;eslint&quot;: &quot;3.19.0&quot;,
+            &quot;babel-eslint&quot;: &quot;7.2.1&quot;,
+            &quot;eslint-config-airbnb&quot;: &quot;14.1.0&quot;,
+            &quot;stylelint&quot;: &quot;7.10.1&quot;,
+            &quot;stylelint-config-standard&quot;: &quot;16.0.0&quot;
+        }
+    },
+    plan: {
+        es6: [&#39;.eslintrc_es6&#39;, &#39;.stylelintrc&#39;],
+        es5: [&#39;.eslintrc_es5&#39;, &#39;.stylelintrc&#39;],
+        default: [&#39;.eslintrc_es6&#39;, &#39;.stylelintrc&#39;]
+    },
+    initHooks: &#39;update_git_hooks.sh&#39;
+}</code></pre></div>
+
+<p>其中<code>dependence</code>指定了<code>felint</code>的依赖包。</p>
+
+<p><a name="plan"></a><code>plan</code>字段指定了<code>Felint</code>可用的代码规范方案。</p>
+
+<p><strong>e.g.</strong></p>
+
+<blockquote>
+<p>es6: [&#39;.eslintrc_es6.json&#39;, &#39;.stylelintrc.json&#39;]</p>
+
+<blockquote>
+<p>该方案名为es6，使用<code>felint-config 的 rules目录</code>下的 .eslintrc_es6.json 和 .stylelintrc.json规范文件。</p>
+</blockquote>
+</blockquote>
+
+<p><code>initHooks</code>指定了初始化钩子的脚本，将在执行felint init、felint update的时候被调用。</p>
+
+<h2 id="toc_27">九、开源协议</h2>
+
+<p>本项目基于 <a href="https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89">MIT</a>协议，请自由地享受和参与开源。</p>
 
 
 <script type="text/javascript">
