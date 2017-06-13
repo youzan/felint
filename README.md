@@ -139,6 +139,8 @@ felint export
 
 该命令用于在当前项目下安装默认eslint/stylelint及其依赖，并在当前项目的package.json注入相应的devDependencies。可参考[felint export使用例子](#felintExportCase)。
 
+**这样的项目，我们称为`felint local`项目。**
+
 #### 4. felint youzan
 
 ```
@@ -255,5 +257,11 @@ module.exports = {
 
 `initHooks`指定了初始化钩子的脚本，将在执行felint init、felint update的时候被调用。
 
-## 九、开源协议
+## 九、felint升级
+
+felint将在你执行`felint init`和`felint update`命令的时候自动检查更新。当发现有新版本felint时，将在命令行提醒你是否需要更新。
+
+**注意，在1.0.0版本后，升级完felint后原来安装在felint安装目录下的依赖将失效，你需要在一个非`felint local`项目下执行felint init 重新安装依赖**
+
+## 十、开源协议
 本项目基于 [MIT](https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89)协议，请自由地享受和参与开源。
