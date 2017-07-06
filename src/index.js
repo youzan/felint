@@ -37,20 +37,20 @@ program
     });
 
 // 更新配置文件和钩子
-// program
-//     .command('update')
-//     .description('更新felint的配置文件')
-//     .action(async () => {
-//         let isUpdating = await versionUtil.checkUpdate();
-//         if (!isUpdating) {
-//             let felintrcFile = felintrc.read();
-//             await fetchConfig(felintrcFile || {});
-//             console.log('开始更新依赖...'.green);
-//             let msgInfo = await dependence.install();
-//             updateHooks.update();
-//             console.log(msgInfo.join('\n'));
-//         }
-//     });
+program
+    .command('update')
+    .description('更新felint的配置文件')
+    .action(async () => {
+        let isUpdating = await versionUtil.checkUpdate();
+        if (!isUpdating) {
+            let felintrcFile = felintrc.read();
+            await fetchConfig(felintrcFile || {});
+            console.log('开始更新依赖...'.green);
+            let msgInfo = await dependence.install();
+            console.log(msgInfo.join('\n'));
+            updateHooks.update();
+        }
+    });
 
 program
     .command('use')
