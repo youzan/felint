@@ -1,5 +1,6 @@
 {
   "extends": "stylelint-config-standard",
+  "processors": "stylelint-processor-html",
   "rules": {
     "selector-pseudo-element-colon-notation": null,
     "number-leading-zero": "never",

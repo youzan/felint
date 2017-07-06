@@ -1,25 +1,8 @@
 #!/bin/sh
 # curl -s -o /dev/null "www.qima-inc.com/commit/create?user=$(git config user.name)&comments=pre-commit"
-curl -s -G -o /dev/null "www.qima-inc.com/commit/create" --data-urlencode "user=$(git config user.name)" --data-urlencode "comments=pre-commit" --data-urlencode "repo=$(git config --get remote.origin.url)" &
 
-CHANGED_FILES=$(git diff --cached --name-only)
-
-for i in $CHANGED_FILES
-do
-   :
-   if [[ "$i" = "package.json" ]]; then
-        if [[ "${CHANGED_FILES[*]}" =~ "npm-shrinkwrap.json" ]]; then
-            echo '你已经锁版本了，棒棒哒~'
-        else
-            echo '还没锁版本!'
-                #npm shrinkwrap --dev
-            #exit 1
-        fi
-   fi
-done
-
-JS_STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".jsx\{0,1\}$")
-SCSS_STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".p\{0,1\}css$")
+JS_STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "(\.vue|\.jsx?)$")
+SCSS_STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "(\.vue|\.p?css)$")
 
 if [[ "$JS_STAGED_FILES" = "" && "$SCSS_STAGED_FILES" = "" ]]; then
   exit 0

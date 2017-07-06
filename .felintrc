@@ -1,4 +1,3 @@
 {
-    "configRep": "http://gitlab.qima-inc.com/fe/felint-config.git",
     "plan": "node"
 }

@@ -3,3 +3,8 @@
 **/vendor
 **/node_modules
 **/dist
+**/local_css
+**/local_js
+**/local
+**/lib
+**/dev

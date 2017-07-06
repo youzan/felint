@@ -28,30 +28,30 @@ async function createPlan(felintDirPath, ruleConfig, planName, isLocal) {
  * stylelint的plugin, extends, processors的路径在stylelint非本地安装时需要绝对路径
  * @return stylelintrc file
  */
-function fixStylelintPath(stylelintrc) {
-    [
-        stylelintrc.extends,
-        stylelintrc.plugins,
-        stylelintrc.processors
-    ] = [
-        stylelintrc.extends,
-        stylelintrc.plugins,
-        stylelintrc.processors
-    ].map((value) => {
-        value = value || [];
-        value = typeof value === 'string' ? [value] : value;
-        return value.map((name) => {
-            let nameStr = typeof name === 'string' ? name : name[0];
-            nameStr = nameStr.indexOf('/') === -1 ? `<%path%>${nameStr}` : nameStr;
-            if (typeof name !== 'string') {
-                name[0] = nameStr;
-                return name;
-            }
-            return nameStr;
-        });
-    });
-    return stylelintrc;
-}
+// function fixStylelintPath(stylelintrc) {
+//     [
+//         stylelintrc.extends,
+//         stylelintrc.plugins,
+//         stylelintrc.processors
+//     ] = [
+//         stylelintrc.extends,
+//         stylelintrc.plugins,
+//         stylelintrc.processors
+//     ].map((value) => {
+//         value = value || [];
+//         value = typeof value === 'string' ? [value] : value;
+//         return value.map((name) => {
+//             let nameStr = typeof name === 'string' ? name : name[0];
+//             nameStr = nameStr.indexOf('/') === -1 ? `<%path%>${nameStr}` : nameStr;
+//             if (typeof name !== 'string') {
+//                 name[0] = nameStr;
+//                 return name;
+//             }
+//             return nameStr;
+//         });
+//     });
+//     return stylelintrc;
+// }
 
 function mergeObject(target, another) {
     if (target && another) {
@@ -84,17 +84,12 @@ async function createEslintrc(targetFilePath, sourceFilePath, fileName, ext) {
 
 async function createStylelintrc(targetFilePath, sourceFilePath, fileName, ext) {
     let felintrcContent = felintrc.read();
-    let isLocal = !!felintrc.read().local;
     let fileContent = '';
     fileContent = await fileUtil.readFile(sourceFilePath, ext);
     if (felintrcContent[fileName]) {
         fileContent = mergeObject(fileContent, felintrcContent[fileName]);
     }
-
-    if (!isLocal) {
-        fileContent = fixStylelintPath(fileContent);
-    }
-    fileUtil.createFileSync(targetFilePath, stylelintCodeGenerator(JSON.stringify(fileContent || {}, null, 4), isLocal), ext);
+    fileUtil.createFileSync(targetFilePath, stylelintCodeGenerator(JSON.stringify(fileContent || {}, null, 4), true), ext);
 }
 
 /**

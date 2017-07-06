@@ -19,50 +19,38 @@ program
     .description('使用felint初始化项目。更多信息请参考：https://github.com/youzan/felint/blob/master/README.md')
     .action(async (options) => {
         let isUpdating = await versionUtil.checkUpdate();
-        if (isUpdating) {
-            return;
-        }
-        let isLocal = felintrc.isLocal();
-        if (!isLocal) {
+        if (!isUpdating) {
             let felintrcFile = felintrc.read();
             await fetchConfig(felintrcFile || {});
-            console.log('开始安装依赖...'.green);
-            // init依赖必须安装在全局
-            await dependence.install(true);
+            console.log('开始安装本地依赖...'.green);
+            let msgInfo = await dependence.install();
+            console.log(msgInfo.join('\n'));
             updateHooks.update();
-            // 移除老规则文件
             sh.exec('rm ./.eslintrc ./.scss-lint.yml');
             await ruleFile.createIgnore();
             let plan = options.plan || felintrc.getPlan() || 'default';
             await felintrc.set({
                 plan
             });
-            ruleFile.create('plan', plan, isLocal);
-        } else {
-            console.log('该项目为felint local项目，无法使用felint进行初始化'.red);
+            ruleFile.create('plan', plan, true);
         }
     });
 
 // 更新配置文件和钩子
-program
-    .command('update')
-    .description('更新felint的配置文件')
-    .action(async () => {
-        let isUpdating = await versionUtil.checkUpdate();
-        if (isUpdating) {
-            return;
-        }
-        let felintrcFile = felintrc.read();
-        let isLocal = felintrc.isLocal();
-        if (!isLocal) {
-            await fetchConfig(felintrcFile || {});
-            console.log('开始更新依赖...'.green);
-            await dependence.install(!isLocal);
-            updateHooks.update();
-        } else {
-            console.log('该项目为felint local项目，无法使用felint进行更新'.red);
-        }
-    });
+// program
+//     .command('update')
+//     .description('更新felint的配置文件')
+//     .action(async () => {
+//         let isUpdating = await versionUtil.checkUpdate();
+//         if (!isUpdating) {
+//             let felintrcFile = felintrc.read();
+//             await fetchConfig(felintrcFile || {});
+//             console.log('开始更新依赖...'.green);
+//             let msgInfo = await dependence.install();
+//             updateHooks.update();
+//             console.log(msgInfo.join('\n'));
+//         }
+//     });
 
 program
     .command('use')
@@ -70,12 +58,11 @@ program
     .option('-p, --plan [planname]', '使用指定代码规范方案')
     .option('-f, --file [filename]', '使用指定规则文件')
     .action((options) => {
-        let isLocal = felintrc.isLocal();
         if (options.plan) {
-            ruleFile.create('plan', options.plan, isLocal);
+            ruleFile.create('plan', options.plan, true);
         }
         if (options.file) {
-            ruleFile.create('file', options.file, isLocal);
+            ruleFile.create('file', options.file, true);
         }
     });
 
@@ -89,27 +76,6 @@ program
         });
     });
 
-// 该命令用于export出相应规则文件和依赖
-
-program
-    .command('export')
-    .option('-p, --plan [value]', '使用指定代码规范方案')
-    .description('创建本地对应依赖')
-    .action(async (options) => {
-        let felintrcFile = felintrc.read();
-        await fetchConfig(felintrcFile || {});
-        console.log('开始安装本地依赖...'.green);
-        await dependence.install();
-        updateHooks.update();
-        let plan = options.plan || felintrc.getPlan() || 'default';
-        await felintrc.set({
-            plan
-        });
-        ruleFile.create('plan', plan, 'local');
-        // 标记为local
-        felintrc.local();
-    });
-
 // 调用eslint校验js
 program
     .command('lintjs [eslintParams...]')
@@ -117,12 +83,7 @@ program
     .option('--exitcode', '使用exitcode')
     .allowUnknownOption()
     .action(function(eslintParams, options) {
-        let eslintPath = 'eslint/lib/cli.js';
-        if (felintrc.isLocal()) {
-            console.log('该项目为felint export项目，将使用项目本地的eslint进行检测\n'.green);
-            console.log(`${process.cwd()}/node_modules/eslint`);
-            eslintPath = `${process.cwd()}/node_modules/eslint/lib/cli.js`;
-        }
+        let eslintPath = `${process.cwd()}/node_modules/eslint/lib/cli.js`;
         let eslintCli;
         try {
             eslintCli = require(eslintPath);
@@ -150,12 +111,7 @@ program
     .option('--exitcode', '使用exitcode')
     .allowUnknownOption()
     .action((stylelintParams, options) => {
-        let stylelintPath = `${path.dirname(__dirname)}/node_modules/stylelint/bin/stylelint.js`;
-        if (felintrc.isLocal()) {
-            console.log('该项目为felint export项目，将使用项目本地的stylelint进行检测\n'.green);
-            console.log(`${process.cwd()}/node_modules/stylelint`);
-            stylelintPath = `${process.cwd()}/node_modules/stylelint/bin/stylelint.js`;
-        }
+        let stylelintPath = `${process.cwd()}/node_modules/stylelint/bin/stylelint.js`;
         let params = process.argv.slice(0);
         params.splice(0, 3);
         if (options.exitcode) {
@@ -171,12 +127,12 @@ program
     });
 
 // 判断该项目是否是local项目
-program
-    .command('islocal')
-    .description('查看该项目是否是local项目')
-    .action(() => {
-        console.log(felintrc.isLocal());
-    });
+// program
+//     .command('islocal')
+//     .description('查看该项目是否是local项目')
+//     .action(() => {
+//         console.log(felintrc.isLocal());
+//     });
 
 // 返回felint base path
 program
@@ -184,6 +140,14 @@ program
     .description('返回felint安装路径')
     .action(() => {
         console.log(path.dirname(__dirname));
+    });
+
+// felint挂钩子
+program
+    .command('hooks')
+    .description('挂载钩子')
+    .action(() => {
+        updateHooks.update();
     });
 
 program.parse(process.argv);
