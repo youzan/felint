@@ -1,7 +1,7 @@
 let fileUtil = require('./utils/fileUtil.js');
 
 function read() {
-    return fileUtil.treeReadFile('.felintrc', 'json');
+    return fileUtil.treeReadFile('.felintrc', 'json') || {};
 }
 
 async function create(content, pathStr, force) {
