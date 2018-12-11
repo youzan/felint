@@ -1,4 +1,4 @@
-let codePattern = `
+const codePattern = `
     var child = require('child_process');
     var islocal = false;
     var felintPath = '';
@@ -17,7 +17,7 @@ let codePattern = `
     module.exports = <%content%>
 `;
 
-let localCodePattern = 'module.exports = <%content%>';
+const localCodePattern = 'module.exports = <%content%>';
 
 export default (content, islocal) => {
     return islocal ? localCodePattern.replace(/<%content%>/g, content) : codePattern.replace(/<%content%>/g, content).replace(/"<%path%>/g, 'ap+"');

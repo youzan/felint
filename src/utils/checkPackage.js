@@ -1,8 +1,8 @@
-let walk = require('walkdir');
+const walk = require('walkdir');
 let nodeModules;
 
 function getAllNodeModules(pathStr) {
-    let modules = [];
+    const modules = [];
     try {
         modules = walk.sync(pathStr, {
             no_recurse: true
@@ -17,19 +17,23 @@ function getAllNodeModules(pathStr) {
             modules = modules.concat(getAllNodeModules(`${pathStr}/${moduleName}`));
         }
     });
+
     return modules;
 }
 
 function check(name, version) {
-    let fixName = `\/${name}$`;
-    let nameReg = new RegExp(fixName);
+    const fixName = `\/${name}$`;
+    const nameReg = new RegExp(fixName);
     let result = false;
+
     if (!nodeModules) {
         nodeModules = getAllNodeModules(`${process.cwd()}/node_modules`);
     }
-    nodeModules.some((n) => {
+
+    nodeModules.some(n => {
         if (nameReg.test(n)) {
-            let packageJson = require(`${n}/package.json`);
+            const packageJson = require(`${n}/package.json`);
+
             if (packageJson.version === version) {
                 result = true;
             } else {
@@ -38,13 +42,14 @@ function check(name, version) {
                     require: version
                 };
             }
+
             return true;
         } else {
             return false;
         }
     });
+
     return result;
 }
 
 module.exports = check;
-

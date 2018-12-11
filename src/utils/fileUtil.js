@@ -1,18 +1,22 @@
 /* global Promise */
-var fs = require('fs');
-var path = require('path');
-var YAML = require('js-yaml');
-let readline = require('readline');
+const fs = require('fs');
+const path = require('path');
+const YAML = require('js-yaml');
+const readline = require('readline');
 
+/**
+ * 判断是否需要覆盖对应文件
+ * @param {String} filePath 需要覆盖的文件路径
+ */
 function checkOverride(filePath) {
-    return new Promise((res) => {
-        let fileStat = has(filePath);
+    return new Promise(res => {
+        const fileStat = has(filePath);
         if (fileStat && fileStat.isFile()) {
-            let rl = readline.createInterface({
+            const rl = readline.createInterface({
                 input: process.stdin,
                 output: process.stdout
             });
-            rl.question(`${filePath}文件已存在，是否要覆盖(Y/n)?`, (ans) => {
+            rl.question(`${filePath}文件已存在，是否要覆盖(Y/n)?`, ans => {
                 rl.close();
                 if (ans !== 'n') {
                     res(true);
@@ -26,15 +30,23 @@ function checkOverride(filePath) {
     });
 }
 
+/**
+ * 获取文件扩展名
+ * @param {String} filename 文件名
+ */
 function getFileExtension(filename) {
     return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2);
 }
 
-function has(pathStr) {
-    if (pathStr) {
+/**
+ * 判断是否存在对应文件
+ * @param {String} filePath 文件路径
+ */
+function has(filePath) {
+    if (filePath) {
         let s;
         try {
-            s = fs.statSync(pathStr);
+            s = fs.statSync(filePath);
         } catch (e) {
             return false;
         }
@@ -46,8 +58,8 @@ function has(pathStr) {
 
 function treeHas(prePath, pathStr, targetFold) {
     if (prePath !== pathStr && pathStr && targetFold) {
-        let fp = `${pathStr}/${targetFold}`;
-        let s = has(fp);
+        const fp = `${pathStr}/${targetFold}`;
+        const s = has(fp);
         if (!s) {
             return treeHas(pathStr, path.dirname(pathStr), targetFold);
         } else {
@@ -63,7 +75,7 @@ function treeHas(prePath, pathStr, targetFold) {
 }
 
 function findUp(pathStr, target, type) {
-    let result = treeHas('', pathStr, target);
+    const result = treeHas('', pathStr, target);
     if (type && result) {
         if (!result.stat[type]()) {
             return findUp(path.dirname(result.path), target, type);
@@ -72,10 +84,16 @@ function findUp(pathStr, target, type) {
     return result;
 }
 
+/**
+ * 读取文件内容
+ * @param {String} pathStr 文件路径
+ * @param {String} ext 扩展名
+ */
 function readFile(pathStr, ext) {
     if (!pathStr) {
         return;
     }
+
     let fileContent;
     if (ext === 'js') {
         fileContent = require(pathStr);
@@ -87,6 +105,7 @@ function readFile(pathStr, ext) {
             return;
         }
     }
+
     if (ext === 'json') {
         fileContent = JSON.parse(fileContent);
     }
@@ -99,9 +118,16 @@ function readFile(pathStr, ext) {
             return;
         }
     }
+
     return fileContent;
 }
 
+/**
+ * 创建文件
+ * @param {String} pathStr 文件路径
+ * @param {String} contentStr 文件内容
+ * @param {String} ext 扩展名
+ */
 function createFileSync(pathStr, contentStr, ext) {
     if (pathStr && contentStr) {
         if (typeof contentStr === 'object') {
@@ -115,14 +141,20 @@ function createFileSync(pathStr, contentStr, ext) {
     }
 }
 
-function treeReadFile(filename, ext) {
-    ext = ext || 'json';
+/**
+ * 树形读取文件
+ * @param {String} filename 文件路径
+ * @param {String} ext 扩展名
+ */
+function treeReadFile(filename, ext = 'json') {
     // read file content
-    let fileInfo = findUp(process.cwd(), filename, 'isFile');
+    const fileInfo = findUp(process.cwd(), filename, 'isFile');
     let content;
+
     if (fileInfo) {
         content = readFile(fileInfo.path, ext);
     }
+
     return content;
 }
 

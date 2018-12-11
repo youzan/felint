@@ -1,8 +1,12 @@
-let fileUtil = require('./utils/fileUtil.js');
+const fileUtil = require('./utils/fileUtil.js');
 
-function read() {
-    let felintDirPath = fPath();
+/**
+ * 读取felint配置文件内容
+ */
+function readFelintConfig() {
+    const felintDirPath = felintDirPath();
     let felintConfig = {};
+
     if (felintDirPath && felintDirPath.path) {
         try {
             felintConfig = require(`${felintDirPath.path}/config.js`);
@@ -10,14 +14,18 @@ function read() {
             console.log('无法找到.felint/config.js，你需要先初始化');
         }
     }
+
     return felintConfig;
 }
 
-function fPath() {
+/**
+ * 获取`.felint`路径
+ */
+function felintDirPath() {
     return fileUtil.findUp(process.cwd(), '.felint', 'isDirectory');
 }
 
 module.exports = {
-    read,
-    fPath
+    readFelintConfig,
+    felintDirPath
 };

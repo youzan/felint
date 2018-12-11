@@ -53,7 +53,7 @@ function compareVersion(versionA, versionB) {
 function checkUpdate() {
     let olVersion;
     let isUpdating = false;
-    return new Promise((res) => {
+    return new Promise(res => {
         try {
             olVersion = sh.exec('npm view felint@latest version', {silent: true});
         } catch (e) {
