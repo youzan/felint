@@ -21,7 +21,7 @@ async function createPlan(planName = 'default', targetFolder) {
 
         for (let index = ruleList.length - 1; index >= 0; index--) {
             const filename = ruleList[index];
-            await createFile(filename);
+            await createFile(filename, targetFolder);
         }
     }
 }
@@ -40,7 +40,7 @@ async function createFile(fileName, targetFolder) {
         const fileNE = fileName.slice(0, ext.length ? (-ext.length - 1) : fileName.length);
 
         // 需要生成的目录
-        const targetFilePath = targetFolder || process.cwd();
+        const targetFilePath = path.resolve(process.cwd(), targetFolder) || process.cwd();
         // 生成的文件路径
         let targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}${ext ? `.${ext}` : ''}`;
 
