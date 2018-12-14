@@ -1,3 +1,4 @@
+const path = require('path');
 const sh = require('shelljs');
 const fileUtil = require('./utils/fileUtil.js');
 const felintConfig = require('./felintConfig.js');
