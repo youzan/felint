@@ -13,7 +13,7 @@ function installPackage(packageName, version) {
     if (!result) {
         try {
             console.log(`开始安装${packageName}@${version}`.green);
-            sh.exec(`npm install -d ${packageName}@${version} --save-dev`);
+            sh.exec(`npm i -D ${packageName}@${version}`);
         } catch (e) {
             console.log(`${packageName}@${version}安装失败，请检查`.red);
         }
@@ -23,51 +23,49 @@ function installPackage(packageName, version) {
 }
 
 // 安装单个依赖
-function install(type, typeInfo = {}) {
+function installSinglePackage(typeInfo = {}) {
     return new Promise(res => {
-        if (type === 'npm') {
-            const npmDepList = Object.keys(typeInfo);
-            const msgInfo = [];
+        const npmDepList = Object.keys(typeInfo);
+        const msgInfo = [];
 
-            npmDepList.forEach(packageName => {
-                let result = installPackage(packageName, typeInfo[packageName]);
-                if (result && result.current) {
-                    msgInfo.push(`你已安装${`${packageName}@${result.current}`.red}，默认版本为${typeInfo[packageName].green}，${'请确认!'.red}`);
-                }
-            });
+        npmDepList.forEach(packageName => {
+            let result = installPackage(packageName, typeInfo[packageName]);
+            if (result && result.current) {
+                msgInfo.push(`你已安装${`${packageName}@${result.current}`.red}，默认版本为${typeInfo[packageName].green}，${'请确认!'.red}`);
+            }
+        });
 
-            res(msgInfo);
-        } else if (typeInfo.install) {
-            const child = sh.exec(typeInfo.install, {
-                async: true,
-                stdio: 'inherit'
-            });
-            child.on('exit', (code) => {
-                if (code !== 0) {
-                    console.log('有依赖安装失败，请检查!'.red);
-                }
-                res();
-            });
-        } else {
-            res();
-        }
+        res(msgInfo);
     });
 }
 
-// 安装配置指定的依赖
-async function installDependence() {
+/**
+ * 安装配置指定的依赖
+ */
+async function install(plan) {
+    const dependenceList = ['npm'];
+    if (typeof plan === 'string') {
+        dependenceList.push(plan);
+    } else if (typeof plan === 'object') {
+        Object.keys(plan).forEach(item => {
+            const planName = plan[item];
+            if (dependenceList.indexOf(planName) === -1) {
+                dependenceList.push(planName);
+            }
+        });
+    }
+
     const configInfo = felintConfig.readFelintConfig();
     const dependenceConfig = configInfo.dependence;
-    const dependenceList = dependenceConfig && Object.keys(dependenceConfig) || [];
+    let dependencePackages = {};
+    dependenceList.forEach(item => {
+        dependencePackages = Object.assign({}, dependencePackages, dependenceConfig[item] || {});
+    });
 
-    if (dependenceList.length) {
-        for (let i = dependenceList.length - 1; i >= 0; i--) {
-            let msgInfo = await install(dependenceList[i], dependenceConfig[dependenceList[i]]);
-            return msgInfo;
-        }
-    }
+    let msgInfo = await installSinglePackage(dependencePackages);
+    return msgInfo || '';
 }
 
 module.exports = {
-    install: installDependence
+    install
 };

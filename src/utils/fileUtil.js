@@ -134,9 +134,10 @@ function createFileSync(pathStr, contentStr, ext) {
             if (ext === 'yaml' || ext === 'yml') {
                 contentStr = YAML.safeDump(contentStr || {});
             } else {
-                contentStr = JSON.stringify(contentStr, null, 4);
+                contentStr = JSON.stringify(contentStr, null, 2);
             }
         }
+
         fs.writeFileSync(pathStr, contentStr);
     }
 }

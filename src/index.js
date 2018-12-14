@@ -7,9 +7,9 @@ const sh = require('shelljs');
 const versionUtil = require('./utils/versionUtil.js');
 const fetchConfig = require('./fetchConfig.js');
 const dependence = require('./dependence.js');
-const updateHooks = require('./updateHooks.js');
 const ruleFile = require('./ruleFile.js');
 const felintrc = require('./felintrc.js');
+const DEFAUTL_CONFIG_URL = 'https://github.com/youzan/felint-config.git';
 
 program
     .version(versionUtil.VERSION)
@@ -22,26 +22,24 @@ program
             const felintrcFile = felintrc.read();
             await fetchConfig(felintrcFile || {});
 
+            const plan = options.plan || felintrc.getPlan() || 'default';
             console.log('开始安装本地依赖...'.green);
-            let msgInfo = await dependence.install();
+            let msgInfo = await dependence.install(plan);
             console.log(msgInfo.join('\n'));
 
-            updateHooks.update();
-
-            sh.exec('rm ./.eslintrc ./.scss-lint.yml');
+            sh.exec('rm ./.eslintrc ./.sass-lint.yml');
             await ruleFile.createIgnore();
-            const plan = options.plan || felintrc.getPlan() || 'default';
             await felintrc.set({
                 plan
             });
-            ruleFile.create('plan', plan, true);
+            ruleFile.createPlan(plan);
         }
     });
 
-// 更新配置文件和钩子
+// 更新依赖
 program
-    .command('update')
-    .description('更新felint的配置文件')
+    .command('dep')
+    .description('安装 eslint/stylelint 及其依赖，并写入package.json')
     .action(async () => {
         const isUpdating = await versionUtil.checkUpdate();
         if (!isUpdating) {
@@ -50,25 +48,25 @@ program
             await fetchConfig(felintrcFile || {});
 
             // 更新依赖
+            const plan = felintrc.getPlan() || 'default';
             console.log('开始更新依赖...'.green);
-            let msgInfo = await dependence.install();
+            let msgInfo = await dependence.install(plan);
             console.log(msgInfo.join('\n'));
-
-            // 更新git hook
-            updateHooks.update();
         }
     });
 
+// 更新规则文件
 program
-    .command('use')
-    .description('在当前目录下使用指定代码规范方案或文件')
-    .option('-p, --plan [planname]', '使用指定代码规范方案')
-    .action(async (options) => {
-        // 先拉取最新的配置文件
+    .command('rules')
+    .description('更新规则文件')
+    .action(async () => {
         const felintrcFile = felintrc.read();
+        // 拉取最新配置
         await fetchConfig(felintrcFile || {});
 
-        ruleFile.create(options.plan);
+        // 根据plan更新校验规则
+        const plan = felintrc.getPlan() || 'default';
+        ruleFile.createPlan(plan);
     });
 
 // 返回felint base path
@@ -79,12 +77,13 @@ program
         console.log(path.dirname(__dirname));
     });
 
-// felint挂钩子
+// 输出felint-config仓库地址
 program
-    .command('hooks')
-    .description('挂载钩子')
+    .command('config-url')
+    .description('输出felint-config仓库地址')
     .action(() => {
-        updateHooks.update();
+        const felintrcFile = felintrc.read();
+        console.log(felintrcFile.configRep || felintrcFile.gitHookUrl || DEFAUTL_CONFIG_URL);
     });
 
 program.parse(process.argv);

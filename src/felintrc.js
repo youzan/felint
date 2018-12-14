@@ -30,7 +30,7 @@ function isLocal() {
 }
 
 async function set(value) {
-    const felintrcFile = read();
+    let felintrcFile = read();
     felintrcFile = felintrcFile || {};
     Object.assign(felintrcFile, value);
     await create(felintrcFile, null, true);

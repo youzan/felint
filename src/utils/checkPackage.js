@@ -2,7 +2,7 @@ const walk = require('walkdir');
 let nodeModules;
 
 function getAllNodeModules(pathStr) {
-    const modules = [];
+    let modules = [];
     try {
         modules = walk.sync(pathStr, {
             no_recurse: true
