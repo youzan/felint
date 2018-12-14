@@ -14,13 +14,12 @@
 [![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
 
 ## 一、什么是Felint
-felint 是一个集成了 eslint、stylelint、git hook 的前端代码检查工具。
+felint 是一个同步前端代码检查规则的工具。
 
-felint 为你的项目做以下三件事：
+felint 为你的项目做以下两件事：
 
 1. 初始化 eslint/stylelint 配置文件，无论是 react 项目、vue 项目、es5 还是 es6 都提供了针对性的配置方案
 1. 安装 eslint/stylelint 及其依赖到当前项目的 node_modules 里
-1. 挂载 git 钩子，在你提交代码时进行强制校验
 
 
 ## 二、安装 felint
@@ -31,7 +30,7 @@ npm install -g felint
 
 ## 三、快速开始
 
-#### 第一步
+### 第一步
 
 在项目的根目录，执行
 
@@ -52,22 +51,12 @@ felint init
 
 同时，`felint` 会帮你挂载好相应的 git hook，当你在运行 `git commit` 时自动检测待提交的文件是否符合相应规范。如无法通过校验，将无法提交。
 
-#### 第二步
+### 第二步
 将这些新增的代码提交到 git 仓库
-
-#### 第三步
-其他参与这个项目的成员，更新代码，然后也在项目的根目录，执行
-```
-felint init
-```
-
-如果不出意外，他们执行这个命令不会有新的文件产生，只是做了挂载 git hook 的操作而已。
-
-当团队内部统一使用 felint 来对前端项目进行代码检测时，请确保每个成员都在该项目目录下执行过一遍 `felint init` 命令。
 
 ## 四、felint命令详解
 
-#### 1. felint init
+### 1. felint init
 
 ```
 felint init -p planname
@@ -78,46 +67,39 @@ planname:
 
 执行 `felint init` 命令后，felint将从[.felintrc](#customerConfig)中读取 `felint config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
 
-当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，挂载 git hook，并生成最终规则文件。
+当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，并生成最终规则文件。
 
 关于规则方案声明请参见[felint-config介绍](#felintconfig)
 
-#### 2. felint use
+### 2. felint dep
+
+该命令会下载 `eslint` 和 `stylelint` 需要的依赖，并写入到 `package.json` 中。
+
+### 3. felint rules
+
+该命令会先将最新的 `felint config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
+
+假设我们配置 `.felintrc` 文件为：
 
 ```
-felint use [options]
-
-options:
--p [value]: 为当前目录使用指定的规则方案
--f value: 为当前目录使用指定的规则文件
+{
+    "gitHookUrl": "https://github.com/youzan/felint-config.git",
+    "plan": {
+        "./app": "node",
+        "./client": "vue"
+    }
+}
 ```
 
-关于规则方案和规则文件请参见[felint-config介绍](#felintconfig)
+运行 `felint rules` 后，会在 `./app` 目录生成 node 相关的规则，在 `./client` 目录生成 vue 相关的规则。
 
-使用场景：
-
-```
-|_ A project
-    |_ B page(es5 page source fold)
-    |_ C page(es6 page source fold)
-```
-此时需要对B、C页面代码进行不同的规则检测。
-推荐做法:
+### 4. felint config-url
 
 ```
-cd A project
-felint init -p es5
-cd C page fold
-felint use -p es6
+felint config-url
 ```
 
-`felint use`命令将在`c page fold`下产生成对应版本的规则文件。此时`C page fold`下的代码将使用自己的规则文件进行校验。
-
-#### 3. felint hooks
-
-该命令用于为当前项目挂载钩子。执行`felint init` 命令时会自动执行该命令。
-
-**_注意，在使用 `felint use / felint hooks` 命令前必须确保当前目录或其父级目录上已运行过 `felint init` (一般来说，团队内有一人执行过即可)。所以，上面 `三、快速开始` 里 `第三步` 实际上团队里其他成员只要执行 `felint hooks` 也就可以了_**
+输出 `felint config` 配置的仓库地址。
 
 ## 五、<a name="felintrc"></a>.felintrc文件
 
@@ -129,7 +111,6 @@ felint use -p es6
 {
     configReg   // 用于指定使用的felint-config仓库地址
     plan        // 用于指定当前项目所使用的规则方案，比如es5/es6/vue/react等
-    ruleExtends // 该字段并不叫这个名字，只是表明其用处
 }
 ```
 #### 1. <a name="configRep"></a>configRep
@@ -141,26 +122,6 @@ felint use -p es6
 #### 2. plan
 
 该字段用于记录执行`felint init -p value`时所使用的规范方案（如果不指定则为default）。
-
-#### 3. ruleExtends
-
-如果你需要覆盖默认的stylelint规则或者eslint规则，推荐修改这里。请不要直接修改对应目录下的`.eslintrc.json`和`.stylelintrc.js`文件，避免别人重新执行`felint init`时重新覆盖为默认规则（虽然在覆盖之前会有确认覆盖的交互提示）。
-该字段内的值会跟`felint-config`的`rules`目录下的**同名规则文件**的内容做merge，生成最终的规则文件。
-
-**e.g.**
-
-```
-{
-    "plan": "es6",
-    ".eslintrc_es6.json": {
-        "rules": {
-            "no-console": 0
-        }
-    }
-}
-```
-
-felint在执行`init`、`use`命令后最终生成的`.eslintrc.json`文件内容将会整合felint-config目录下rules/.eslintrc_es6.json的内容和.felintrc内的.eslintrc_es6.json的值。
 
 ## 六、felint升级
 
