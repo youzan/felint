@@ -55,7 +55,7 @@ async function createFile(fileName, targetFolder) {
         // 覆盖文件
         if (override) {
             sh.cp(sourceFilePath, targetFileName);
-            console.log(`你已创建${fileName}规则`.green);
+            console.log(`你在目录${targetFilePath}已创建${fileName}规则`.green);
         }
     }
 }
