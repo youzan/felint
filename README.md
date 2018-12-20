@@ -85,7 +85,7 @@ planname:
 用于指定初始化规则方案
 ```
 
-执行 `felint init` 命令后，felint将从 `.felintrc` 中读取 `felint config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
+执行 `felint init` 命令后，felint将从 `.felintrc` 中读取 `felint-config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
 
 当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，并生成最终规则文件。
 
