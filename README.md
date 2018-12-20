@@ -62,17 +62,17 @@ felint init
 }
 ```
 
-此时在 `./app` 目录生成 node 相关的规则，在 `./client` 目录会生成 vue 相关的规则。
+此时在 `./app` 目录生成 node 相关的校验规则，在 `./client` 目录会生成 vue 相关的校验规则。
 
 ### 第二步
 将这些新增的代码提交到 git 仓库
 
 ## 四、名词解释
 
-`felint-config`：里面包含了代码校验规则的配置信息，默认为：[felint-config](https://github.com/youzan/felint-config)
-`.felintrc`：用于配置 `felint-config` 的git仓库地址，和项目的代码规范方案。
-`eslint`：`JavaScript` 代码校验工具，详细文档点[这里](https://eslint.org/)
-`stylelint`：`CSS` 代码校验工具，详细文档点[这里](https://github.com/stylelint/stylelint)
+- `felint-config`：里面包含了代码校验规则的配置信息，默认为：[felint-config](https://github.com/youzan/felint-config)
+- `.felintrc`：用于配置 `felint-config` 的git仓库地址，和项目的代码规范方案。
+- `eslint`：`JavaScript` 代码校验工具，详细文档点[这里](https://eslint.org/)
+- `stylelint`：`CSS` 代码校验工具，详细文档点[这里](https://github.com/stylelint/stylelint)
 
 ## 五、felint命令详解
 
