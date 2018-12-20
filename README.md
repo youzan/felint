@@ -49,12 +49,32 @@ felint init
 |_.stylelintignore // stylelint ignore配置文件
 ```
 
-同时，`felint` 会帮你挂载好相应的 git hook，当你在运行 `git commit` 时自动检测待提交的文件是否符合相应规范。如无法通过校验，将无法提交。
+同时，当你在运行 `git commit` 时自动检测待提交的文件是否符合相应规范。如无法通过校验，将无法提交。
+
+当你需要再一个项目的不同目录使用不同的代码规范时，我们可以通过 `.felintrc` 自定义校验规则：
+
+```
+{
+    "plan": {
+        "./app": "node",
+        "./client": "vue"
+    }
+}
+```
+
+此时在 `./app` 目录生成 node 相关的规则，在 `./client` 目录会生成 vue 相关的规则。
 
 ### 第二步
 将这些新增的代码提交到 git 仓库
 
-## 四、felint命令详解
+## 四、名词解释
+
+`felint-config`：里面包含了代码校验规则的配置信息，默认为：[felint-config](https://github.com/youzan/felint-config)
+`.felintrc`：用于配置 `felint-config` 的git仓库地址，和项目的代码规范方案。
+`eslint`：`JavaScript` 代码校验工具，详细文档点[这里](https://eslint.org/)
+`stylelint`：`CSS` 代码校验工具，详细文档点[这里](https://github.com/stylelint/stylelint)
+
+## 五、felint命令详解
 
 ### 1. felint init
 
@@ -65,11 +85,11 @@ planname:
 用于指定初始化规则方案
 ```
 
-执行 `felint init` 命令后，felint将从[.felintrc](#customerConfig)中读取 `felint config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
+执行 `felint init` 命令后，felint将从 `.felintrc` 中读取 `felint config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
 
 当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，并生成最终规则文件。
 
-关于规则方案声明请参见[felint-config介绍](#felintconfig)
+关于规则方案声明请参见[felint-config介绍](https://github.com/youzan/felint-config)
 
 ### 2. felint dep
 
@@ -77,21 +97,7 @@ planname:
 
 ### 3. felint rules
 
-该命令会先将最新的 `felint config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
-
-假设我们配置 `.felintrc` 文件为：
-
-```
-{
-    "gitHookUrl": "https://github.com/youzan/felint-config.git",
-    "plan": {
-        "./app": "node",
-        "./client": "vue"
-    }
-}
-```
-
-运行 `felint rules` 后，会在 `./app` 目录生成 node 相关的规则，在 `./client` 目录生成 vue 相关的规则。
+该命令会先将最新的 `felint-config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
 
 ### 4. felint config-url
 
@@ -101,7 +107,7 @@ felint config-url
 
 输出 `felint config` 配置的仓库地址。
 
-## 五、<a name="felintrc"></a>.felintrc文件
+## 六、<a name="felintrc"></a>.felintrc文件
 
 **.felintrc**用于配置`felint-config`的git仓库地址、对默认规则进行一定程度的自定义覆盖以及记录该项目所使用的代码规则方案。
 
@@ -109,13 +115,13 @@ felint config-url
 
 ```
 {
-    configReg   // 用于指定使用的felint-config仓库地址
+    gitHookUrl   // 用于指定使用的felint-config仓库地址
     plan        // 用于指定当前项目所使用的规则方案，比如es5/es6/vue/react等
 }
 ```
-#### 1. <a name="configRep"></a>configRep
+#### 1. <a name="gitHookUrl"></a>gitHookUrl
 
-如果你不想使用我们默认的[felint-config](https://github.com/youzan/felint-config)校验，你可以fork出来修改为自己的felint-config（修改方法参考 [felint-config 的 readme](https://github.com/youzan/felint-config/blob/master/README.md) ），然后在[.felintrc](#felintrc)文件的[configRep](#configRep)字段中手动配置你自己的 felint-config 仓库地址。
+如果你不想使用我们默认的[felint-config](https://github.com/youzan/felint-config)校验，你可以fork出来修改为自己的felint-config（修改方法参考 [felint-config 的 readme](https://github.com/youzan/felint-config/blob/master/README.md) ），然后在 `.felintrc` 文件的 `gitHookUrl` 字段中手动配置你自己的 `felint-config` 仓库地址。
 
 然后重新执行一次 `felint init` 即可。
 
@@ -123,9 +129,9 @@ felint config-url
 
 该字段用于记录执行`felint init -p value`时所使用的规范方案（如果不指定则为default）。
 
-## 六、felint升级
+## 七、felint升级
 
 felint将在你执行`felint init`命令的时候自动检查更新。当发现有新版本felint时，将在命令行提醒你是否需要更新。
 
-## 七、开源协议
+## 八、开源协议
 本项目基于 [MIT](https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89)协议，请自由地享受和参与开源。
