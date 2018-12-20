@@ -41,8 +41,8 @@ felint init
 `felint` 初始化完成后你的项目中将会产生如下目录和文件：
 
 ```
-|_.felintrc        // 第一次被执行 felint init 后会生成这个文件，里面包含了使用哪个配置方案等信息
-|_.felint          // felint config文件夹
+|_.felintrc        // 第一次被执行 felint init 后会在项目根目录生成这个文件，里面包含了使用哪个配置方案等信息
+|_.felint          // felint-config文件夹
 |_.eslintrc.json   // eslint 规则文件，用于检测js代码（使用的是官方推荐的配置）
 |_.eslintignore    // eslint ignore配置文件
 |_.stylelintrc.js  // stylelint 规则文件，用于检测css代码（使用的是官方推荐的配置）
@@ -70,7 +70,7 @@ felint init
 ## 四、名词解释
 
 - `felint-config`：里面包含了代码校验规则的配置信息，默认为：[felint-config](https://github.com/youzan/felint-config)
-- `.felintrc`：用于配置 `felint-config` 的git仓库地址，和项目的代码规范方案。
+- `.felintrc`：类似于 `.babelrc`文件，放在项目根目录用于配置 `felint-config` 的git仓库地址，和项目的代码规范方案。
 - `eslint`：`JavaScript` 代码校验工具，详细文档点[这里](https://eslint.org/)
 - `stylelint`：`CSS` 代码校验工具，详细文档点[这里](https://github.com/stylelint/stylelint)
 
