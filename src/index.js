@@ -32,9 +32,9 @@ program
             await felintrc.set({
                 plan
             });
-            ruleFile.createPlan(plan);
-
-            sh.exec('rm -rf ./.felint', { silent: true });
+            ruleFile.createPlan(plan).then(() => {
+                sh.exec('rm -rf ./.felint', { silent: true });
+            });
         }
     });
 
@@ -52,10 +52,11 @@ program
             // 更新依赖
             const plan = felintrc.getPlan() || 'default';
             console.log('开始更新依赖...'.green);
-            let msgInfo = await dependence.install(plan);
+            let msgInfo = await dependence.install(plan).then(() => {
+                sh.exec('rm -rf ./.felint', { silent: true });
+            });
             console.log(msgInfo.join('\n'));
 
-            sh.exec('rm -rf ./.felint', { silent: true });
         }
     });
 
@@ -70,9 +71,9 @@ program
 
         // 根据plan更新校验规则
         const plan = felintrc.getPlan() || 'default';
-        ruleFile.createPlan(plan);
-
-        sh.exec('rm -rf ./.felint', { silent: true });
+        ruleFile.createPlan(plan).then(() => {
+            sh.exec('rm -rf ./.felint', { silent: true });
+        });
     });
 
 // 返回felint base path
