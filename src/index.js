@@ -33,6 +33,8 @@ program
                 plan
             });
             ruleFile.createPlan(plan);
+
+            sh.exec('rm -rf ./.felint', { silent: true });
         }
     });
 
@@ -52,6 +54,8 @@ program
             console.log('开始更新依赖...'.green);
             let msgInfo = await dependence.install(plan);
             console.log(msgInfo.join('\n'));
+
+            sh.exec('rm -rf ./.felint', { silent: true });
         }
     });
 
@@ -67,6 +71,8 @@ program
         // 根据plan更新校验规则
         const plan = felintrc.getPlan() || 'default';
         ruleFile.createPlan(plan);
+
+        sh.exec('rm -rf ./.felint', { silent: true });
     });
 
 // 返回felint base path
