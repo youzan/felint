@@ -1,6 +1,6 @@
 {
     "name": "felint",
-    "version": "1.1.0-beta4",
+    "version": "1.1.0-beta5",
     "description": "linter for fe",
     "keywords": [
         "eslint",
