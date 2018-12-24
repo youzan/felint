@@ -6,23 +6,32 @@ const felintConfig = require('./felintConfig.js');
 /**
  * 生成对应的规则
  * @param {String} planName plan名
- * @param {String} targetFolder 生成的plan目录
  */
-async function createPlan(planName = 'default', targetFolder) {
+async function createPlan(planName = 'default') {
+    const ruleConfig = felintConfig.readFelintConfig();
+    const planConfig = {};
+
     if (typeof planName === 'object') {
         Object.keys(planName).forEach(planPath => {
-            createPlan(planName[planPath], planPath);
+            if (!planPath) return;
+
+            planConfig[planPath] = ruleConfig.plan[planName[planPath]];
         });
+    } else {
+        planConfig[process.cwd()] = ruleConfig.plan[planName];
     }
 
-    const ruleConfig = felintConfig.readFelintConfig();
 
-    if (ruleConfig && ruleConfig.plan && ruleConfig.plan[planName]) {
-        const ruleList = ruleConfig.plan[planName];
+    const planKeys = Object.keys(planConfig);
+    if (planKeys.length !== 0) {
+        for (let i = 0; i < planKeys.length; i++) {
+            const planPath = planKeys[i];
+            const ruleList = planConfig[planPath];
 
-        for (let index = ruleList.length - 1; index >= 0; index--) {
-            const filename = ruleList[index];
-            await createFile(filename, targetFolder);
+            for (let j = ruleList.length - 1; j >= 0; j--) {
+                const filename = ruleList[j];
+                await createFile(filename, planPath);
+            }
         }
     }
 }
