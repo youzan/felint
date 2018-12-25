@@ -51,6 +51,10 @@ async function createFile(fileName, targetFolder) {
 
         // 需要生成的目录
         const targetFilePath = targetFolder ? path.resolve(process.cwd(), targetFolder) : process.cwd();
+
+        // 判断目标目录路径是否存在
+        if (!fileUtil.has(targetFilePath)) return;
+
         // 生成的文件路径
         let targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}${ext ? `.${ext}` : ''}`;
 
