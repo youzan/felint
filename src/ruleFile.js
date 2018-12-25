@@ -59,7 +59,7 @@ async function createFile(fileName, targetFolder) {
         let targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}${ext ? `.${ext}` : ''}`;
 
         if (fileNE.indexOf('stylelint') > -1) {
-            targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}.js`;
+            targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}.json`;
         }
 
         const override = await fileUtil.checkOverride(targetFileName);
