@@ -7,7 +7,7 @@ const felintConfig = require('./felintConfig.js');
  * 生成对应的规则
  * @param {String} planName plan名
  */
-async function createPlan(planName = 'default') {
+async function createPlan(planName = 'default', force) {
     const ruleConfig = felintConfig.readFelintConfig();
     const planConfig = {};
 
@@ -30,7 +30,7 @@ async function createPlan(planName = 'default') {
 
             for (let j = ruleList.length - 1; j >= 0; j--) {
                 const filename = ruleList[j];
-                await createFile(filename, planPath);
+                await createFile(filename, planPath, force);
             }
         }
     }
@@ -41,8 +41,9 @@ async function createPlan(planName = 'default') {
  * 最终产生规则文件
  * @param {String} felintDirPath .felint路径
  * @param {String} fileName 文件名
+ * @param {Boolean} force 是否强制更新文件
  */
-async function createFile(fileName, targetFolder) {
+async function createFile(fileName, targetFolder, force) {
     const felintDirPath = felintConfig.felintDirPath();
 
     if (felintDirPath && fileName) {
@@ -62,7 +63,7 @@ async function createFile(fileName, targetFolder) {
             targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}.json`;
         }
 
-        const override = await fileUtil.checkOverride(targetFileName);
+        const override = force || await fileUtil.checkOverride(targetFileName);
         const sourceFilePath = `${felintDirPath.path}/rules/${fileName}`;
 
         // 覆盖文件

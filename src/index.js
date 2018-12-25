@@ -15,6 +15,7 @@ program
     .version(versionUtil.VERSION)
     .command('init')
     .option('-p, --plan [value]', '使用指定代码规范方案')
+    .option('-f, --force', '强制更新规则文件')
     .description('使用felint初始化项目。更多信息请参考：https://github.com/youzan/felint/blob/master/README.md')
     .action(async (options) => {
         const isUpdating = await versionUtil.checkUpdate();
@@ -32,7 +33,7 @@ program
             await felintrc.set({
                 plan
             });
-            await ruleFile.createPlan(plan);
+            await ruleFile.createPlan(plan, options.force);
 
             sh.exec('rm -rf ./.felint', { silent: true });
         }
@@ -62,15 +63,16 @@ program
 // 更新规则文件
 program
     .command('rules')
+    .option('-f, --force', '强制更新规则文件')
     .description('更新规则文件')
-    .action(async () => {
+    .action(async (options) => {
         const felintrcFile = felintrc.read();
         // 拉取最新配置
         await fetchConfig(felintrcFile || {});
 
         // 根据plan更新校验规则
         const plan = felintrc.getPlan() || 'default';
-        await ruleFile.createPlan(plan);
+        await ruleFile.createPlan(plan, options.force);
 
         sh.exec('rm -rf ./.felint', { silent: true });
     });
