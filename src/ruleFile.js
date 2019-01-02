@@ -4,6 +4,28 @@ const fileUtil = require('./utils/fileUtil.js');
 const felintConfig = require('./felintConfig.js');
 
 /**
+ * 合并两个对象
+ * @param {Object} target 
+ * @param {Object} another 
+ */
+function mergeObject(target, another) {
+    if (target && another) {
+        Object.keys(target).concat(Object.keys(another)).forEach((key) => {
+            if (target[key] === undefined) {
+                target[key] = another[key];
+            } else {
+                if (toString.call(target[key]) === '[object Object]') {
+                    Object.assign(target[key], another[key] || {});
+                } else {
+                    target[key] = another[key] === undefined ? target[key] : another[key];
+                }
+            }
+        });
+    }
+    return target;
+}
+
+/**
  * 生成对应的规则
  * @param {String} planName plan名
  */
@@ -20,7 +42,6 @@ async function createPlan(planName = 'default', force) {
     } else {
         planConfig[process.cwd()] = ruleConfig.plan[planName];
     }
-
 
     const planKeys = Object.keys(planConfig);
     if (planKeys.length !== 0) {
@@ -68,9 +89,26 @@ async function createFile(fileName, targetFolder, force) {
 
         // 覆盖文件
         if (override) {
-            sh.cp(sourceFilePath, targetFileName);
+            if (ext === 'json') {
+                await createJsonFile(targetFileName, sourceFilePath, ext);
+            } else {
+                sh.cp(sourceFilePath, targetFilePath);
+            }
             console.log(`你在目录${targetFilePath}已创建${fileName}规则`.green);
         }
+    }
+}
+
+async function createJsonFile(targetFileName, sourceFilePath, ext) {
+    const targetFileContent = fileUtil.readFile(targetFileName, ext);
+    let fileContent = '';
+
+    if (ext === 'json') {
+        fileContent = await fileUtil.readFile(sourceFilePath, ext);
+        console.log(fileContent, targetFileContent)
+        fileContent = mergeObject(fileContent, targetFileContent);
+        
+        fileUtil.createFileSync(targetFileName, JSON.stringify(fileContent || {}, null, 2), ext);
     }
 }
 

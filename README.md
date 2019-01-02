@@ -79,10 +79,12 @@ felint init
 ### 1. felint init
 
 ```
-felint init -p planname
+felint init -p planname -f force
 
 planname:
 用于指定初始化规则方案
+force:
+是否强制覆盖已有的规则
 ```
 
 执行 `felint init` 命令后，felint将从 `.felintrc` 中读取 `felint-config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
@@ -95,9 +97,20 @@ planname:
 
 该命令会下载 `eslint` 和 `stylelint` 需要的依赖，并写入到 `package.json` 中。
 
+```
+felint dep
+```
+
 ### 3. felint rules
 
 该命令会先将最新的 `felint-config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
+
+```
+felint rule -f force
+
+force:
+是否强制覆盖已有的规则
+```
 
 ### 4. felint config-url
 
