@@ -21,6 +21,7 @@ felint 为你的项目做以下两件事：
 1. 初始化 eslint/stylelint 配置文件，无论是 react 项目、vue 项目、es5 还是 es6 都提供了针对性的配置方案
 1. 安装 eslint/stylelint 及其依赖到当前项目的 node_modules 里
 
+如果你需要利用`git`的钩子来校验代码，推荐使用：[husky](https://github.com/typicode/husky) 和 [lint-staged](https://github.com/okonet/lint-staged)。
 
 ## 二、安装 felint
 
