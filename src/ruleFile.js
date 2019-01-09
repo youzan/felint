@@ -92,7 +92,7 @@ async function createFile(fileName, targetFolder, force) {
             if (ext === 'json') {
                 await createJsonFile(targetFileName, sourceFilePath, ext);
             } else {
-                sh.cp(sourceFilePath, targetFilePath);
+                sh.cp(sourceFilePath, targetFileName);
             }
             console.log(`你在目录${targetFilePath}已创建${fileName}规则`.green);
         }
