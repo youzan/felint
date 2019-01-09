@@ -1,58 +1,13 @@
-let sh = require('shelljs');
-
-let fileUtil = require('./utils/fileUtil.js');
-
-let stylelintCodeGenerator = require('./utils/stylelintCodeGenerator.js').default;
-
-let felintrc = require('./felintrc.js');
-
-let felintConfig = require('./felintConfig.js');
-
-const toString = Object.prototype.toString;
-
-
-async function createPlan(felintDirPath, ruleConfig, planName, isLocal) {
-    if (ruleConfig && ruleConfig.plan && ruleConfig.plan[planName]) {
-        let ruleList = ruleConfig.plan[planName];
-        let index;
-        let filename;
-        for (index = ruleList.length - 1; index >= 0; index--) {
-            filename = ruleList[index];
-            await createFile(felintDirPath, filename, isLocal);
-        }
-    }
-}
-
+const path = require('path');
+const sh = require('shelljs');
+const fileUtil = require('./utils/fileUtil.js');
+const felintConfig = require('./felintConfig.js');
 
 /**
- * stylelint的plugin, extends, processors的路径在stylelint非本地安装时需要绝对路径
- * @return stylelintrc file
+ * 合并两个对象
+ * @param {Object} target 
+ * @param {Object} another 
  */
-// function fixStylelintPath(stylelintrc) {
-//     [
-//         stylelintrc.extends,
-//         stylelintrc.plugins,
-//         stylelintrc.processors
-//     ] = [
-//         stylelintrc.extends,
-//         stylelintrc.plugins,
-//         stylelintrc.processors
-//     ].map((value) => {
-//         value = value || [];
-//         value = typeof value === 'string' ? [value] : value;
-//         return value.map((name) => {
-//             let nameStr = typeof name === 'string' ? name : name[0];
-//             nameStr = nameStr.indexOf('/') === -1 ? `<%path%>${nameStr}` : nameStr;
-//             if (typeof name !== 'string') {
-//                 name[0] = nameStr;
-//                 return name;
-//             }
-//             return nameStr;
-//         });
-//     });
-//     return stylelintrc;
-// }
-
 function mergeObject(target, another) {
     if (target && another) {
         Object.keys(target).concat(Object.keys(another)).forEach((key) => {
@@ -70,83 +25,116 @@ function mergeObject(target, another) {
     return target;
 }
 
-async function createEslintrc(targetFilePath, sourceFilePath, fileName, ext) {
-    let felintrcContent = felintrc.read();
-    let fileContent = '';
-    if ((ext === 'json' || ext === 'yaml' || ext === 'yml') && felintrcContent[fileName]) {
-        fileContent = await fileUtil.readFile(sourceFilePath, ext);
-        fileContent = mergeObject(fileContent, felintrcContent[fileName]);
-        fileUtil.createFileSync(targetFilePath, JSON.stringify(fileContent || {}, null, 4), ext);
-    } else {
-        sh.cp(sourceFilePath, targetFilePath);
-    }
-}
+/**
+ * 生成对应的规则
+ * @param {String} planName plan名
+ */
+async function createPlan(planName = 'default', force) {
+    const ruleConfig = felintConfig.readFelintConfig();
+    const planConfig = {};
 
-async function createStylelintrc(targetFilePath, sourceFilePath, fileName, ext) {
-    let felintrcContent = felintrc.read();
-    let fileContent = '';
-    fileContent = await fileUtil.readFile(sourceFilePath, ext);
-    if (felintrcContent[fileName]) {
-        fileContent = mergeObject(fileContent, felintrcContent[fileName]);
+    if (typeof planName === 'object') {
+        Object.keys(planName).forEach(planPath => {
+            if (!planPath) return;
+
+            planConfig[planPath] = ruleConfig.plan[planName[planPath]];
+        });
+    } else {
+        planConfig[process.cwd()] = ruleConfig.plan[planName];
     }
-    fileUtil.createFileSync(targetFilePath, stylelintCodeGenerator(JSON.stringify(fileContent || {}, null, 4), true), ext);
+
+    const planKeys = Object.keys(planConfig);
+    if (planKeys.length !== 0) {
+        for (let i = 0; i < planKeys.length; i++) {
+            const planPath = planKeys[i];
+            const ruleList = planConfig[planPath];
+
+            for (let j = ruleList.length - 1; j >= 0; j--) {
+                const filename = ruleList[j];
+                await createFile(filename, planPath, force);
+            }
+        }
+    }
 }
 
 /**
  * 文件名命名规则
  * 最终产生规则文件
+ * @param {String} felintDirPath .felint路径
+ * @param {String} fileName 文件名
+ * @param {Boolean} force 是否强制更新文件
  */
-async function createFile(felintDirPath, fileName) {
-    if (fileName) {
-        let ext = fileUtil.getFileExtension(fileName).toLowerCase();
-        let fileNE = fileName.slice(0, ext.length ? (-ext.length - 1) : fileName.length);
-        let targetFilePath = `${process.cwd()}/${fileNE.split('_')[0]}${ext ? `.${ext}` : ''}`;
+async function createFile(fileName, targetFolder, force) {
+    const felintDirPath = felintConfig.felintDirPath();
+
+    if (felintDirPath && fileName) {
+        const ext = fileUtil.getFileExtension(fileName).toLowerCase();
+        const fileNE = fileName.slice(0, ext.length ? (-ext.length - 1) : fileName.length);
+
+        // 需要生成的目录
+        const targetFilePath = targetFolder ? path.resolve(process.cwd(), targetFolder) : process.cwd();
+
+        // 判断目标目录路径是否存在
+        if (!fileUtil.has(targetFilePath)) return;
+
+        // 生成的文件路径
+        let targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}${ext ? `.${ext}` : ''}`;
+
         if (fileNE.indexOf('stylelint') > -1) {
-            targetFilePath = `${process.cwd()}/${fileNE.split('_')[0]}.js`;
+            targetFileName = `${targetFilePath}/${fileNE.split('_')[0]}.json`;
         }
-        let override = await fileUtil.checkOverride(targetFilePath);
-        let sourceFilePath = `${felintDirPath}/rules/${fileName}`;
+
+        const override = force || await fileUtil.checkOverride(targetFileName);
+        const sourceFilePath = `${felintDirPath.path}/rules/${fileName}`;
+
+        // 覆盖文件
         if (override) {
-            // override
-            if (fileNE.indexOf('stylelint') > -1) {
-                await createStylelintrc(targetFilePath, sourceFilePath, fileName, ext);
-            } else if (fileNE.indexOf('eslintrc') > -1) {
-                await createEslintrc(targetFilePath, sourceFilePath, fileName, ext);
+            if (ext === 'json') {
+                await createJsonFile(targetFileName, sourceFilePath, ext);
             } else {
                 sh.cp(sourceFilePath, targetFilePath);
             }
+            console.log(`你在目录${targetFilePath}已创建${fileName}规则`.green);
         }
     }
 }
 
-// 读取.felint里面的
-function create(type, name, isLocal) {
-    let felintDirPath = felintConfig.fPath();
-    if (felintDirPath && felintDirPath.path) {
-        let config = felintConfig.read();
-        if (type === 'plan') {
-            createPlan(felintDirPath.path, config, name, isLocal);
-        } else {
-            createFile(felintDirPath.path, name, isLocal);
-        }
+async function createJsonFile(targetFileName, sourceFilePath, ext) {
+    const targetFileContent = fileUtil.readFile(targetFileName, ext);
+    let fileContent = '';
+
+    if (ext === 'json') {
+        fileContent = await fileUtil.readFile(sourceFilePath, ext);
+        fileContent = mergeObject(fileContent, targetFileContent);
+        
+        fileUtil.createFileSync(targetFileName, JSON.stringify(fileContent || {}, null, 2), ext);
     }
 }
 
+/**
+ * 创建ignore文件
+ */
 async function createIgnore() {
-    let felintDirPath = felintConfig.fPath();
+    const felintDirPath = felintConfig.felintDirPath();
+
     if (felintDirPath && felintDirPath.path) {
         // 查看.felint下有无.eslintignore文件
-        let hasEslintIgnoreFile = fileUtil.has(`${felintDirPath.path}/.eslintignore`);
+        const hasEslintIgnoreFile = fileUtil.has(`${felintDirPath.path}/.eslintignore`);
+
         if (hasEslintIgnoreFile) {
-            let override = await fileUtil.checkOverride(`${process.cwd()}/.eslintignore`);
+            const override = await fileUtil.checkOverride(`${process.cwd()}/.eslintignore`);
+
             if (override) {
                 sh.cp(`${felintDirPath.path}/.eslintignore`, `${process.cwd()}/.eslintignore`);
             }
         }
+
         // 查看.felint下有无.stylelintignore文件
-        let hasStylelintIgnoreFile = fileUtil.has(`${felintDirPath.path}/.stylelintignore`);
+        const hasStylelintIgnoreFile = fileUtil.has(`${felintDirPath.path}/.stylelintignore`);
+
         if (hasStylelintIgnoreFile) {
-            let override = await fileUtil.checkOverride(`${process.cwd()}/.stylelintignore`);
+            const override = await fileUtil.checkOverride(`${process.cwd()}/.stylelintignore`);
+
             if (override) {
                 sh.cp(`${felintDirPath.path}/.stylelintignore`, `${process.cwd()}/.stylelintignore`);
             }
@@ -155,6 +143,6 @@ async function createIgnore() {
 }
 
 module.exports = {
-    create,
+    createPlan,
     createIgnore
 };
