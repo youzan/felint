@@ -105,7 +105,6 @@ async function createJsonFile(targetFileName, sourceFilePath, ext) {
 
     if (ext === 'json') {
         fileContent = await fileUtil.readFile(sourceFilePath, ext);
-        console.log(fileContent, targetFileContent)
         fileContent = mergeObject(fileContent, targetFileContent);
         
         fileUtil.createFileSync(targetFileName, JSON.stringify(fileContent || {}, null, 2), ext);
