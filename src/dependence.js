@@ -7,13 +7,23 @@ const checkPackage = require('./utils/checkPackage.js');
  * @param {String} packageName 包名
  * @param {String} version 版本号
  */
-function installPackage(packageName, version) {
+function installPackage(packageName, version, configInfo) {
+    const { registryUrl, disturl, useYarn } = configInfo;
     const result = checkPackage(packageName, version);
+    let installCommand = useYarn ? `yarn add ${packageName}@${version} --dev` : `npm i -D ${packageName}@${version}`;
+
+    if (registryUrl) {
+        installCommand += ` --registry=${registryUrl}`;
+    }
+
+    if (disturl) {
+        installCommand += ` --disturl=${disturl}`;
+    }
 
     if (!result) {
         try {
             console.log(`开始安装${packageName}@${version}`.green);
-            sh.exec(`npm i -D ${packageName}@${version}`);
+            sh.exec(installCommand);
         } catch (e) {
             console.log(`${packageName}@${version}安装失败，请检查`.red);
         }
@@ -23,13 +33,13 @@ function installPackage(packageName, version) {
 }
 
 // 安装单个依赖
-function installSinglePackage(typeInfo = {}) {
+function installSinglePackage(typeInfo = {}, configInfo) {
     return new Promise(res => {
         const npmDepList = Object.keys(typeInfo);
         const msgInfo = [];
 
         npmDepList.forEach(packageName => {
-            let result = installPackage(packageName, typeInfo[packageName]);
+            let result = installPackage(packageName, typeInfo[packageName], configInfo);
             if (result && result.current) {
                 msgInfo.push(`你已安装${`${packageName}@${result.current}`.red}，默认版本为${typeInfo[packageName].green}，${'请确认!'.red}`);
             }
@@ -62,7 +72,7 @@ async function install(plan) {
         dependencePackages = Object.assign({}, dependencePackages, dependenceConfig[item] || {});
     });
 
-    let msgInfo = await installSinglePackage(dependencePackages);
+    let msgInfo = await installSinglePackage(dependencePackages, configInfo);
     return msgInfo || '';
 }
 
