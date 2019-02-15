@@ -80,11 +80,11 @@ felint init
 ### 1. felint init
 
 ```
-felint init -p planname -f force
+felint init -p planname -f
 
-planname:
+-p planname:
 用于指定初始化规则方案
-force:
+-f:
 是否强制覆盖已有的规则
 ```
 
@@ -107,9 +107,9 @@ felint dep
 该命令会先将最新的 `felint-config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
 
 ```
-felint rules -f force
+felint rules -f
 
-force:
+-f:
 是否强制覆盖已有的规则
 ```
 
