@@ -1,14 +1,16 @@
 const sh = require('shelljs');
 const felintConfig = require('./felintConfig.js');
 const checkPackage = require('./utils/checkPackage.js');
+const felintrc = require('./felintrc.js');
 
 /**
  * 安装npm包
  * @param {String} packageName 包名
  * @param {String} version 版本号
  */
-function installPackage(packageName, version, configInfo) {
-    const { registryUrl, disturl, useYarn } = configInfo;
+function installPackage(packageName, version) {
+    const felintrcFile = felintrc.read();
+    const { registryUrl, disturl, useYarn = true } = felintrcFile;
     const result = checkPackage(packageName, version);
     let installCommand = useYarn ? `yarn add ${packageName}@${version} --dev` : `npm i -D ${packageName}@${version}`;
 
@@ -33,13 +35,13 @@ function installPackage(packageName, version, configInfo) {
 }
 
 // 安装单个依赖
-function installSinglePackage(typeInfo = {}, configInfo) {
+function installSinglePackage(typeInfo = {}) {
     return new Promise(res => {
         const npmDepList = Object.keys(typeInfo);
         const msgInfo = [];
 
         npmDepList.forEach(packageName => {
-            let result = installPackage(packageName, typeInfo[packageName], configInfo);
+            let result = installPackage(packageName, typeInfo[packageName]);
             if (result && result.current) {
                 msgInfo.push(`你已安装${`${packageName}@${result.current}`.red}，默认版本为${typeInfo[packageName].green}，${'请确认!'.red}`);
             }
@@ -72,7 +74,7 @@ async function install(plan) {
         dependencePackages = Object.assign({}, dependencePackages, dependenceConfig[item] || {});
     });
 
-    let msgInfo = await installSinglePackage(dependencePackages, configInfo);
+    let msgInfo = await installSinglePackage(dependencePackages);
     return msgInfo || '';
 }
 
