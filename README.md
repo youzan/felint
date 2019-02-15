@@ -129,8 +129,11 @@ felint config-url
 
 ```
 {
-    gitHookUrl   // 用于指定使用的felint-config仓库地址
-    plan        // 用于指定当前项目所使用的规则方案，比如es5/es6/vue/react等
+    gitHookUrl     // 用于指定使用的`felint-config`仓库地址
+    plan          // 用于指定当前项目所使用的规则方案，比如`es5/es6/vue/react`等
+    disturl       // 用于指定安装依赖时的`disturl`
+    registryUrl   // 用于指定安装依赖时的`registry`
+    useYarn       // 是否使用yarn来安装依赖，默认为`true`
 }
 ```
 #### 1. <a name="gitHookUrl"></a>gitHookUrl
