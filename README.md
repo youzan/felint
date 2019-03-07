@@ -14,7 +14,8 @@
 [![NPM](https://nodei.co/npm/felint.png?downloads=true&downloadRank=true)](https://nodei.co/npm/felint/)
 
 ## 一、什么是Felint
-felint 是一个同步前端代码检查规则的工具。
+
+felint 是一个同步前端代码校验规则的工具。
 
 felint 为你的项目做以下两件事：
 
@@ -39,20 +40,31 @@ npm install -g felint
 felint init
 ```
 
-`felint` 初始化完成后你的项目中将会产生如下目录和文件：
+`felint` 初始化完成后你的项目中将会产生如下文件：
 
 ```
-|_.felintrc        // 第一次被执行 felint init 后会在项目根目录生成这个文件，里面包含了使用哪个配置方案等信息
-|_.felint          // felint-config文件夹
+|_.felintrc        // 第一次被执行 felint init 后会在项目根目录生成这个文件，具体见下面 .felintrc 章节
 |_.eslintrc.json   // eslint 规则文件，用于检测js代码（使用的是官方推荐的配置）
 |_.eslintignore    // eslint ignore配置文件
 |_.stylelintrc.js  // stylelint 规则文件，用于检测css代码（使用的是官方推荐的配置）
 |_.stylelintignore // stylelint ignore配置文件
 ```
 
-同时，当你在运行 `git commit` 时自动检测待提交的文件是否符合相应规范。如无法通过校验，将无法提交。
+### 第二步
 
-当你需要再一个项目的不同目录使用不同的代码规范时，我们可以通过 `.felintrc` 自定义校验规则：
+将这些 `felint` 生成的文件提交到 git 仓库。
+
+### 第三步（高阶用法）
+
+默认情况下，`felint` 是同步 `ES6` 方案的校验规则，当你需要在项目中使用`Vue` 或 `React`规则时，我们可以在初始化时指定一个规则方案：
+
+```
+felint init -p vue
+```
+
+此时，`felint` 将会在你的项目中初始化适用于 `Vue` 的校验规则。
+
+如果你需要在一个项目的不同目录使用不同的代码规范时，可以修改 `.felintrc` 文件自定义校验规则：
 
 ```
 {
@@ -63,10 +75,7 @@ felint init
 }
 ```
 
-此时在 `./app` 目录生成 node 相关的校验规则，在 `./client` 目录会生成 vue 相关的校验规则。
-
-### 第二步
-将这些新增的代码提交到 git 仓库
+此时在 `./app` 目录生成 node 的校验规则，在 `./client` 目录会生成 vue 的校验规则。
 
 ## 四、名词解释
 
@@ -83,20 +92,18 @@ felint init
 felint init -p planname -f
 
 -p planname:
-用于指定初始化规则方案
+用于指定初始化规则方案，如果不指定则会使用默认的规则
 -f:
 是否强制覆盖已有的规则
 ```
 
-执行 `felint init` 命令后，felint将从 `.felintrc` 中读取 `felint-config` git仓库地址 或 使用默认地址<https://github.com/youzan/felint-config>（如没有.felintrc文件）下载所需的默认的配置文件并保存在项目的 `.felint` 文件夹下。
-
-当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，并生成最终规则文件。
+执行 `felint init` 命令后，felint会读取 `.felintrc` 中 `felint-config` 配置的校验规则仓库地址（如未指定则会使用默认地址<https://github.com/youzan/felint-config>），当配置文件下载完成后，`felint` 将自动执行配置文件内部的初始化脚本文件，并生成最终规则文件。
 
 关于规则方案声明请参见[felint-config介绍](https://github.com/youzan/felint-config)
 
 ### 2. felint dep
 
-该命令会下载 `eslint` 和 `stylelint` 需要的依赖，并写入到 `package.json` 中。
+该命令会下载 `eslint` 和 `stylelint` 所需要的依赖，并写入到 `package.json` 中。
 
 ```
 felint dep
@@ -104,7 +111,7 @@ felint dep
 
 ### 3. felint rules
 
-该命令会先将最新的 `felint-config` 下载到本地，然后依据 `.felintrc` 里配置的 `plan` 规则生成对应的规则文件。
+该命令会根据 `.felintrc` 配置文件同步最新的校验规则文件。
 
 ```
 felint rules -f
@@ -146,9 +153,5 @@ felint config-url
 
 该字段用于记录执行`felint init -p value`时所使用的规范方案（如果不指定则为default）。
 
-## 七、felint升级
-
-felint将在你执行`felint init`命令的时候自动检查更新。当发现有新版本felint时，将在命令行提醒你是否需要更新。
-
-## 八、开源协议
+## 七、开源协议
 本项目基于 [MIT](https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89)协议，请自由地享受和参与开源。
