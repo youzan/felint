@@ -77,6 +77,26 @@ felint init -p vue
 
 此时在 `./app` 目录生成 node 的校验规则，在 `./client` 目录会生成 vue 的校验规则。
 
+如果你不想使用默认的[felint-config](https://github.com/youzan/felint-config)规则来校验，你可以fork出来修改为自己的 felint-config（修改方法参考 [felint-config 的 readme](https://github.com/youzan/felint-config/blob/master/README.md) ），然后将 `.felintrc` 文件的 `gitHookUrl` 字段配置为你自己的仓库地址即可。
+
+```
+{
+    "gitHookUrl": "https://github.com/youzan/felint-config.git"
+}
+```
+
+当你更新了 felint-config 中的规则依赖，你需要在项目的根目录执行以下命令同步最新的依赖：
+
+```
+felint dep
+```
+
+当你更新了 felint-config 中的校验规则，你需要在项目的根目录执行以下命令同步最新的规则文件：
+
+```
+felint rules
+```
+
 ## 四、名词解释
 
 - `felint-config`：里面包含了代码校验规则的配置信息，默认为：[felint-config](https://github.com/youzan/felint-config)
@@ -143,15 +163,6 @@ felint config-url
     useYarn       // 是否使用yarn来安装依赖，默认为`true`
 }
 ```
-#### 1. <a name="gitHookUrl"></a>gitHookUrl
-
-如果你不想使用我们默认的[felint-config](https://github.com/youzan/felint-config)校验，你可以fork出来修改为自己的felint-config（修改方法参考 [felint-config 的 readme](https://github.com/youzan/felint-config/blob/master/README.md) ），然后在 `.felintrc` 文件的 `gitHookUrl` 字段中手动配置你自己的 `felint-config` 仓库地址。
-
-然后重新执行一次 `felint init` 即可。
-
-#### 2. plan
-
-该字段用于记录执行`felint init -p value`时所使用的规范方案（如果不指定则为default）。
 
 ## 七、开源协议
 本项目基于 [MIT](https://zh.wikipedia.org/wiki/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89)协议，请自由地享受和参与开源。
